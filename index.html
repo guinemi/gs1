@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GUINEMI GS</title>
+  <style>
+    :root {
+      --bg-dark: #141414;
+      --bg-card: #1f1f1f;
+      --accent: #e50914;
+      --text-main: #ffffff;
+      --text-muted: #b3b3b3;
+      --focus-ring: #ffffff;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: 'Segoe UI', Roboto, Arial, sans-serif;
+      user-select: none;
+    }
+
+    header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 76px;
+      padding: 0 36px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: linear-gradient(180deg, rgba(10, 10, 10, 0.96) 0%, rgba(20, 20, 20, 0.88) 100%);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      z-index: 20;
+    }
+
+    .brand {
+      font-size: 28px;
+      font-weight: 900;
+      letter-spacing: 2px;
+      color: var(--accent);
+      text-transform: uppercase;
+    }
+
+    .tabs {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .tab-btn {
+      background: #242424;
+      color: var(--text-muted);
+      border: 3px solid transparent;
+      border-radius: 6px;
+      padding: 10px 24px;
+      font-size: 18px;
+      font-weight: 700;
+      cursor: pointer;
+      outline: none;
+      transition: transform 0.14s ease, background-color 0.14s ease, color 0.14s ease, border-color 0.14s ease;
+    }
+
+    .tab-btn.active {
+      background: #2f2f2f;
+      color: var(--text-main);
+      border-bottom: 4px solid var(--accent);
+    }
+
+    .tab-btn:focus,
+    .tab-btn.tv-focused {
+      background: #ffffff;
+      color: #000000;
+      border-color: var(--accent);
+      transform: scale(1.05);
+      box-shadow: 0 0 22px rgba(255, 255, 255, 0.45);
+    }
+
+    .page-indicator {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-muted);
+      background: rgba(255, 255, 255, 0.07);
+      padding: 7px 14px;
+      border-radius: 999px;
+    }
+
+    main {
+      position: fixed;
+      top: 76px;
+      left: 0;
+      width: 100vw;
+      height: calc(100vh - 76px);
+      padding: 20px 36px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .grid-9 {
+      width: 100%;
+      height: 100%;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(3, 1fr);
+      gap: 18px 22px;
+    }
+
+    .card {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      min-height: 0;
+      background-color: var(--bg-card);
+      border-radius: 10px;
+      overflow: hidden;
+      border: 3px solid transparent;
+      cursor: pointer;
+      outline: none;
+      display: flex;
+      align-items: flex-end;
+      transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .card img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.22s ease;
+    }
+
+    .card::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        180deg,
+        rgba(0, 0, 0, 0.05) 30%,
+        rgba(0, 0, 0, 0.72) 78%,
+        rgba(0, 0, 0, 0.94) 100%
+      );
+      z-index: 1;
+    }
+
+    .card-info {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .card-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #ffffff;
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.9);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .card-badge {
+      flex-shrink: 0;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+      padding: 4px 8px;
+      border-radius: 4px;
+      background: rgba(229, 9, 20, 0.92);
+      color: #ffffff;
+    }
+
+    .card.empty-slot {
+      background: rgba(255, 255, 255, 0.03);
+      border: 2px dashed rgba(255, 255, 255, 0.12);
+      align-items: center;
+      justify-content: center;
+    }
+
+    .card.empty-slot::after {
+      display: none;
+    }
+
+    .card.empty-slot span {
+      color: rgba(255, 255, 255, 0.25);
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .card:focus,
+    .card.tv-focused {
+      border-color: var(--focus-ring);
+      transform: scale(1.03);
+      box-shadow: 0 0 0 3px var(--accent), 0 14px 32px rgba(0, 0, 0, 0.85);
+      z-index: 5;
+    }
+
+    .card:focus img,
+    .card.tv-focused img {
+      transform: scale(1.06);
+    }
+
+    .player-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: #000000;
+      z-index: 100;
+    }
+
+    .player-overlay.active {
+      display: block;
+    }
+
+    .player-overlay iframe {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      border: none;
+      background: #000000;
+      z-index: 101;
+    }
+
+    .back-btn {
+      position: fixed;
+      top: 18px;
+      left: 20px;
+      z-index: 110;
+      background: rgba(20, 20, 20, 0.85);
+      color: #ffffff;
+      border: 2px solid rgba(255, 255, 255, 0.55);
+      border-radius: 8px;
+      padding: 10px 18px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      outline: none;
+      transition: background-color 0.15s ease, transform 0.15s ease, border-color 0.15s ease;
+    }
+
+    .back-btn:hover,
+    .back-btn:focus,
+    .back-btn.tv-focused {
+      background: var(--accent);
+      border-color: #ffffff;
+      color: #ffffff;
+      transform: scale(1.05);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">GUINEMI GS</div>
+
+    <nav class="tabs" aria-label="Categorias">
+      <button id="tabTv" class="tab-btn active" data-tab="tv" tabindex="0">Canais de TV</button>
+      <button id="tabMovies" class="tab-btn" data-tab="movies" tabindex="0">Filmes</button>
+    </nav>
+
+    <div id="pageIndicator" class="page-indicator">Página 1 de 2</div>
+  </header>
+
+  <main>
+    <div id="grid9" class="grid-9"></div>
+  </main>
+
+  <div id="playerOverlay" class="player-overlay" aria-hidden="true">
+    <button id="backBtn" class="back-btn" tabindex="-1">◄ Voltar</button>
+    <iframe
+      id="playerFrame"
+      src=""
+      tabindex="0"
+      allow="autoplay; encrypted-media; fullscreen"
+      allowfullscreen
+    ></iframe>
+  </div>
+
+  <script>
+    const CATALOG = {
+      tv: [
+        {
+          title: "AMC",
+          cover: "https://2.dpetftvwrc.workers.dev/amc.png",
+          url: "https://sinalpublicoetv.vercel.app/?id=amc"
+        },
+        {
+          title: "AXN",
+          cover: "https://2.dpetftvwrc.workers.dev/axn.png",
+          url: "https://sinalpublicoetv.vercel.app/?id=axn"
+        },
+        {
+          title: "ADULT SWIN",
+          cover: "https://2.dpetftvwrc.workers.dev/adultswim.png",
+          url: "https://sinalpublicoetv.vercel.app/?id=adultswim"
+        },
+        {
+          title: "ANIMAL PLANET",
+          cover: "https://2.dpetftvwrc.workers.dev/animalplanet.png",
+          url: "https://sinalpublicoetv.vercel.app/?id=animalplanet"
+        },
+        {
+          title: "AE",
+          cover: "https://2.dpetftvwrc.workers.dev/ae.png",
+          url: "https://sinalpublicoetv.vercel.app/?id=ae"
+        },
+        {
+          title: "CARTOON NETWORK",
+          cover: "https://2.dpetftvwrc.workers.dev/cartoonnetwork.png",
+          url: "https://sinalpublicoetv.vercel.app/?id=cartoonnetwork"
+        },
+        {
+          title: "Canal 07",
+          cover: "https://images.unsplash.com/photo-1536440136628-849c177e76a1?auto=format&fit=crop&w=800&q=80",
+          url: "https://sinalpublicoetv.vercel.app/?id=cartoonnetwork"
+        },
+        {
+          title: "Canal 08",
+          cover: "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=800&q=80",
+          url: "https://sinalpublicoetv.vercel.app/?id=cartoonnetwork"
+        },
+        {
+          title: "Canal 09",
+          cover: "https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?auto=format&fit=crop&w=800&q=80",
+          url: "https://sinalpublicoetv.vercel.app/?id=cartoonnetwork"
+        },
+        {
+          title: "Canal 10",
+          cover: "https://images.unsplash.com/photo-1478720568477-152d9b164e26?auto=format&fit=crop&w=800&q=80",
+          url: "https://sinalpublicoetv.vercel.app/?id=cartoonnetwork"
+        },
+        {
+          title: "Canal 11",
+          cover: "https://images.unsplash.com/photo-1542204165-65bf26472b9b?auto=format&fit=crop&w=800&q=80",
+          url: "https://sinalpublicoetv.vercel.app/?id=cartoonnetwork"
+        },
+        {
+          title: "Canal 12",
+          cover: "https://images.unsplash.com/photo-1616530940355-351fabd9524b?auto=format&fit=crop&w=800&q=80",
+          url: "https://sinalpublicoetv.vercel.app/?id=cartoonnetwork"
+        },
+        {
+          title: "Canal 13",
+          cover: "https://images.unsplash.com/photo-1505686994434-e3cc5abf1330?auto=format&fit=crop&w=800&q=80",
+          url: "https://sinalpublicoetv.vercel.app/?id=cartoonnetwork"
+        },
+        {
+          title: "Canal 14",
+          cover: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=800&q=80",
+          url: "https://sinalpublicoetv.vercel.app/?id=cartoonnetwork"
+        },
+        {
+          title: "Canal 15",
+          cover: "https://images.unsplash.com/photo-1460881680858-30d872d5b530?auto=format&fit=crop&w=800&q=80",
+          url: "https://sinalpublicoetv.vercel.app/?id=cartoonnetwork"
+        },
+        {
+          title: "Canal 16",
+          cover: "https://images.unsplash.com/photo-1524985069026-dd778a71c7b4?auto=format&fit=crop&w=800&q=80",
+          url: "https://sinalpublicoetv.vercel.app/?id=cartoonnetwork"
+        },
+        {
+          title: "Canal 17",
+          cover: "https://images.unsplash.com/photo-1440404653325-ab127d49abc1?auto=format&fit=crop&w=800&q=80",
+          url: "https://sinalpublicoetv.vercel.app/?id=cartoonnetwork"
+        },
+        {
+          title: "Canal 18",
+          cover: "https://images.unsplash.com/photo-1513106580091-1d82408b8cd6?auto=format&fit=crop&w=800&q=80",
+          url: "https://sinalpublicoetv.vercel.app/?id=cartoonnetwork"
+        }
+      ],
+      movies: [
+        {
+          title: "TROPA DE ELITE",
+          cover: "https://www.palestraspimentel.com/wp-content/uploads/backup/2019/08/capitao-nascimento-ator-wagner-moura.jpg",
+          url: "https://www.youtube.com/embed/2BLPFl2YHe8?si=QGbK-xc9UiacLhir"
+        },
+        {
+          title: "MERCENARIOS 2",
+          cover: "https://filmdump.wordpress.com/wp-content/uploads/2014/06/expendable-2-1.jpg",
+          url: "https://www.youtube.com/embed/SBoODpO-DT0?si=DXyW8ffCFSaOyb7n"
+        },
+        {
+          title: "Filme 03",
+          cover: "https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?auto=format&fit=crop&w=800&q=80",
+          url: "https://sinalpublicoetv.vercel.app/?id=cartoonnetwork"
+        },
+        {
+          title: "Filme 04",
+          cover: "https://images.unsplash.com/photo-1478720568477-152d9b164e26?auto=format&fit=crop&w=800&q=80",
+          url: "https://sinalpublicoetv.vercel.app/?id=cartoonnetwork"
+        },
+        {
+          title: "Filme 05",
+          cover: "https://images.unsplash.com/photo-1542204165-65bf26472b9b?auto=format&fit=crop&w=800&q=80",
+          url: "https://sinalpublicoetv.vercel.app/?id=cartoonnetwork"
+        },
+        {
+          title: "Filme 06",
+          cover: "https://images.unsplash.com/photo-1616530940355-351fabd9524b?auto=format&fit=crop&w=800&q=80",
+          url: "https://sinalpublicoetv.vercel.app/?id=cartoonnetwork"
+        },
+        {
+          title: "Filme 07",
+          cover: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=800&q=80",
+          url: "https://sinalpublicoetv.vercel.app/?id=cartoonnetwork"
+        },
+        {
+          title: "Filme 08",
+          cover: "https://images.unsplash.com/photo-1524985069026-dd778a71c7b4?auto=format&fit=crop&w=800&q=80",
+          url: "https://sinalpublicoetv.vercel.app/?id=cartoonnetwork"
+        },
+        {
+          title: "Filme 09",
+          cover: "https://images.unsplash.com/photo-1440404653325-ab127d49abc1?auto=format&fit=crop&w=800&q=80",
+          url: "https://sinalpublicoetv.vercel.app/?id=cartoonnetwork"
+        },
+        {
+          title: "Filme 10",
+          cover: "https://images.unsplash.com/photo-1574375927938-d5a98e8ffe85?auto=format&fit=crop&w=800&q=80",
+          url: "https://sinalpublicoetv.vercel.app/?id=cartoonnetwork"
+        },
+        {
+          title: "Filme 11",
+          cover: "https://images.unsplash.com/photo-1522869635100-9f4c5e86aa37?auto=format&fit=crop&w=800&q=80",
+          url: "https://sinalpublicoetv.vercel.app/?id=cartoonnetwork"
+        },
+        {
+          title: "Filme 12",
+          cover: "https://images.unsplash.com/photo-1593784991095-a205069470b6?auto=format&fit=crop&w=800&q=80",
+          url: "https://sinalpublicoetv.vercel.app/?id=cartoonnetwork"
+        },
+        {
+          title: "Filme 13",
+          cover: "https://images.unsplash.com/photo-1585647347483-22b66260dfff?auto=format&fit=crop&w=800&q=80",
+          url: "https://sinalpublicoetv.vercel.app/?id=cartoonnetwork"
+        },
+        {
+          title: "Filme 14",
+          cover: "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?auto=format&fit=crop&w=800&q=80",
+          url: "https://sinalpublicoetv.vercel.app/?id=cartoonnetwork"
+        },
+        {
+          title: "Filme 15",
+          cover: "https://images.unsplash.com/photo-1505686994434-e3cc5abf1330?auto=format&fit=crop&w=800&q=80",
+          url: "https://sinalpublicoetv.vercel.app/?id=cartoonnetwork"
+        },
+        {
+          title: "Filme 16",
+          cover: "https://images.unsplash.com/photo-1460881680858-30d872d5b530?auto=format&fit=crop&w=800&q=80",
+          url: "https://sinalpublicoetv.vercel.app/?id=cartoonnetwork"
+        },
+        {
+          title: "Filme 17",
+          cover: "https://images.unsplash.com/photo-1513106580091-1d82408b8cd6?auto=format&fit=crop&w=800&q=80",
+          url: "https://sinalpublicoetv.vercel.app/?id=cartoonnetwork"
+        },
+        {
+          title: "Filme 18",
+          cover: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80",
+          url: "https://sinalpublicoetv.vercel.app/?id=cartoonnetwork"
+        }
+      ]
+    };
+
+    const PAGE_SIZE = 9;
+
+    const tabTv = document.getElementById("tabTv");
+    const tabMovies = document.getElementById("tabMovies");
+    const grid9 = document.getElementById("grid9");
+    const pageIndicator = document.getElementById("pageIndicator");
+    const playerOverlay = document.getElementById("playerOverlay");
+    const playerFrame = document.getElementById("playerFrame");
+    const backBtn = document.getElementById("backBtn");
+
+    let currentTab = "tv";
+    let currentPage = 0;
+    let focusZone = "grid";
+    let focusedTabIndex = 0;
+    let focusedSlot = 0;
+    let lastPlayedSlot = 0;
+
+    function isInFullscreen() {
+      return Boolean(
+        document.fullscreenElement ||
+        document.webkitFullscreenElement ||
+        document.mozFullScreenElement ||
+        document.msFullscreenElement
+      );
+    }
+
+    function ensureFullscreen() {
+      if (isInFullscreen()) return;
+      const root = document.documentElement;
+      const req =
+        root.requestFullscreen ||
+        root.webkitRequestFullscreen ||
+        root.mozRequestFullScreen ||
+        root.msRequestFullscreen;
+
+      if (typeof req === "function") {
+        try {
+          const res = req.call(root);
+          if (res && typeof res.catch === "function") {
+            res.catch(() => {});
+          }
+        } catch (_) {}
+      }
+    }
+
+    ["pointerdown", "pointermove", "keydown", "touchstart"].forEach((evtName) => {
+      window.addEventListener(evtName, ensureFullscreen, { passive: true });
+    });
+
+    function normalizePlayerUrl(rawUrl) {
+      if (!rawUrl) return "";
+      const trimmed = rawUrl.trim();
+      const match = trimmed.match(/src=["']([^"']+)["']/i);
+      const extracted = match ? match[1] : trimmed;
+
+      try {
+        const parsed = new URL(extracted);
+        if (parsed.hostname === "youtu.be") {
+          const videoId = parsed.pathname.replace(/^\/+/, "");
+          if (videoId) {
+            return `https://www.youtube.com/embed/${videoId}`;
+          }
+        }
+      } catch (_) {}
+
+      return extracted;
+    }
+
+    function getItems() {
+      return CATALOG[currentTab] || [];
+    }
+
+    function getTotalPages() {
+      const len = getItems().length;
+      return Math.max(1, Math.ceil(len / PAGE_SIZE));
+    }
+
+    function getPageSlice(pageIndex) {
+      const items = getItems();
+      const start = pageIndex * PAGE_SIZE;
+      return items.slice(start, start + PAGE_SIZE);
+    }
+
+    function updateTabsUI() {
+      tabTv.classList.toggle("active", currentTab === "tv");
+      tabMovies.classList.toggle("active", currentTab === "movies");
+    }
+
+    function updateFocusVisuals() {
+      document.querySelectorAll(".tv-focused").forEach(el => el.classList.remove("tv-focused"));
+
+      if (focusZone === "tabs") {
+        const btn = focusedTabIndex === 0 ? tabTv : tabMovies;
+        btn.classList.add("tv-focused");
+        btn.focus({ preventScroll: true });
+      } else if (focusZone === "grid") {
+        const cards = grid9.querySelectorAll(".card");
+        if (cards.length > 0) {
+          const safeIndex = Math.min(focusedSlot, cards.length - 1);
+          focusedSlot = safeIndex;
+          const target = cards[safeIndex];
+          target.classList.add("tv-focused");
+          target.focus({ preventScroll: true });
+        }
+      } else if (focusZone === "player") {
+        backBtn.classList.remove("tv-focused");
+        playerFrame.focus({ preventScroll: true });
+      }
+    }
+
+    function renderPage(preferredSlot = 0) {
+      const totalPages = getTotalPages();
+      if (currentPage >= totalPages) currentPage = totalPages - 1;
+      if (currentPage < 0) currentPage = 0;
+
+      updateTabsUI();
+      pageIndicator.textContent = `Página ${currentPage + 1} de ${totalPages}`;
+
+      const slice = getPageSlice(currentPage);
+      grid9.innerHTML = "";
+
+      for (let slot = 0; slot < PAGE_SIZE; slot++) {
+        const item = slice[slot];
+        const card = document.createElement("div");
+        card.dataset.slot = slot;
+
+        if (item) {
+          card.className = "card";
+          card.tabIndex = 0;
+          card.setAttribute("role", "button");
+          card.setAttribute("aria-label", item.title);
+
+          const img = document.createElement("img");
+          img.src = item.cover;
+          img.alt = item.title;
+          img.loading = "eager";
+          img.onerror = function () {
+            this.src = "https://images.unsplash.com/photo-1574375927938-d5a98e8ffe85?auto=format&fit=crop&w=800&q=80";
+          };
+
+          const info = document.createElement("div");
+          info.className = "card-info";
+
+          const title = document.createElement("div");
+          title.className = "card-title";
+          title.textContent = item.title;
+
+          const badge = document.createElement("span");
+          badge.className = "card-badge";
+          badge.textContent = currentTab === "tv" ? "TV" : "FILME";
+
+          info.appendChild(title);
+          info.appendChild(badge);
+          card.appendChild(img);
+          card.appendChild(info);
+
+          card.addEventListener("click", () => {
+            focusedSlot = slot;
+            lastPlayedSlot = slot;
+            openPlayer(item.url);
+          });
+
+          card.addEventListener("mouseenter", () => {
+            focusZone = "grid";
+            focusedSlot = slot;
+            updateFocusVisuals();
+          });
+        } else {
+          card.className = "card empty-slot";
+          card.tabIndex = -1;
+          const label = document.createElement("span");
+          label.textContent = "Vazio";
+          card.appendChild(label);
+        }
+
+        grid9.appendChild(card);
+      }
+
+      focusedSlot = Math.min(preferredSlot, PAGE_SIZE - 1);
+      if (focusZone === "grid") {
+        updateFocusVisuals();
+      }
+    }
+
+    function switchTab(tabName) {
+      currentTab = tabName;
+      focusedTabIndex = tabName === "tv" ? 0 : 1;
+      currentPage = 0;
+      focusZone = "grid";
+      renderPage(0);
+    }
+
+    function openPlayer(url) {
+      const cleanUrl = normalizePlayerUrl(url);
+      if (!cleanUrl) return;
+      ensureFullscreen();
+      playerFrame.src = cleanUrl;
+      playerOverlay.classList.add("active");
+      playerOverlay.setAttribute("aria-hidden", "false");
+      focusZone = "player";
+      updateFocusVisuals();
+    }
+
+    function closePlayer() {
+      playerOverlay.classList.remove("active");
+      playerOverlay.setAttribute("aria-hidden", "true");
+      playerFrame.src = "";
+      focusZone = "grid";
+      renderPage(lastPlayedSlot);
+      ensureFullscreen();
+    }
+
+    tabTv.addEventListener("click", () => switchTab("tv"));
+    tabMovies.addEventListener("click", () => switchTab("movies"));
+    backBtn.addEventListener("click", closePlayer);
+
+    window.addEventListener("keydown", (e) => {
+      const code = e.keyCode;
+      const key = e.key;
+
+      if (focusZone === "player") {
+        if (key === "Escape" || key === "Backspace" || code === 461 || code === 10009 || code === 8) {
+          e.preventDefault();
+          closePlayer();
+        }
+        return;
+      }
+
+      const isUp = key === "ArrowUp" || code === 38;
+      const isDown = key === "ArrowDown" || code === 40;
+      const isLeft = key === "ArrowLeft" || code === 37;
+      const isRight = key === "ArrowRight" || code === 39;
+      const isEnter = key === "Enter" || code === 13;
+      const isBack = key === "Escape" || key === "Backspace" || code === 461 || code === 10009;
+
+      if (!isUp && !isDown && !isLeft && !isRight && !isEnter && !isBack) {
+        return;
+      }
+
+      e.preventDefault();
+
+      if (isBack && currentPage > 0) {
+        currentPage -= 1;
+        renderPage(focusedSlot);
+        return;
+      }
+
+      if (focusZone === "tabs") {
+        if (isLeft) {
+          focusedTabIndex = 0;
+          updateFocusVisuals();
+        } else if (isRight) {
+          focusedTabIndex = 1;
+          updateFocusVisuals();
+        } else if (isDown) {
+          focusZone = "grid";
+          renderPage(0);
+        } else if (isEnter) {
+          switchTab(focusedTabIndex === 0 ? "tv" : "movies");
+        }
+        return;
+      }
+
+      const col = focusedSlot % 3;
+      const row = Math.floor(focusedSlot / 3);
+      const totalPages = getTotalPages();
+
+      if (isLeft) {
+        if (col > 0) {
+          focusedSlot -= 1;
+          updateFocusVisuals();
+        } else if (currentPage > 0) {
+          currentPage -= 1;
+          renderPage(focusedSlot + 2);
+        }
+      } else if (isRight) {
+        if (col < 2) {
+          focusedSlot += 1;
+          updateFocusVisuals();
+        } else if (currentPage < totalPages - 1) {
+          currentPage += 1;
+          renderPage(focusedSlot - 2);
+        }
+      } else if (isUp) {
+        if (row > 0) {
+          focusedSlot -= 3;
+          updateFocusVisuals();
+        } else if (currentPage > 0) {
+          currentPage -= 1;
+          renderPage(6 + col);
+        } else {
+          focusZone = "tabs";
+          focusedTabIndex = currentTab === "tv" ? 0 : 1;
+          updateFocusVisuals();
+        }
+      } else if (isDown) {
+        if (row < 2) {
+          focusedSlot += 3;
+          updateFocusVisuals();
+        } else {
+          if (currentPage < totalPages - 1) {
+            currentPage += 1;
+            renderPage(col);
+          } else {
+            currentPage = 0;
+            renderPage(col);
+          }
+        }
+      } else if (isEnter) {
+        const slice = getPageSlice(currentPage);
+        const item = slice[focusedSlot];
+        if (item && item.url) {
+          lastPlayedSlot = focusedSlot;
+          openPlayer(item.url);
+        }
+      }
+    });
+
+    let wheelLock = false;
+    window.addEventListener("wheel", (e) => {
+      if (focusZone === "player" || wheelLock) return;
+      if (Math.abs(e.deltaY) < 20) return;
+
+      wheelLock = true;
+      const totalPages = getTotalPages();
+
+      if (e.deltaY > 0) {
+        currentPage = currentPage < totalPages - 1 ? currentPage + 1 : 0;
+      } else {
+        currentPage = currentPage > 0 ? currentPage - 1 : totalPages - 1;
+      }
+
+      focusZone = "grid";
+      renderPage(focusedSlot);
+
+      setTimeout(() => {
+        wheelLock = false;
+      }, 220);
+    }, { passive: true });
+
+    renderPage(0);
+  </script>
+</body>
+</html>
