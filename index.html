@@ -1,947 +1,1234 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>GUINEMI GS</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>GUINEMI</title>
   <style>
     :root {
-      --bg-dark: #141414;
-      --bg-card: #1f1f1f;
-      --accent: #e50914;
-      --text-main: #ffffff;
-      --text-muted: #b3b3b3;
-      --focus-ring: #ffffff;
+      --bg: #10131b;
+      --panel: #1b2130;
+      --panel-hover: #252e42;
+      --border: #303849;
+      --accent: #315fca;
+      --accent-channel: #1f8a6b;
+      --accent-focus: #6ea8ff;
+      --text: #f5f6fa;
+      --muted: #aeb5c4;
     }
-
-    * {
+    * { box-sizing: border-box; }
+    body {
       margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      -webkit-tap-highlight-color: transparent;
+      background: var(--bg);
+      color: var(--text);
+      font: 15px/1.4 Arial, sans-serif;
     }
-
-    html, body {
-      width: 100vw;
-      height: 100vh;
-      overflow: hidden;
-      background-color: var(--bg-dark);
-      color: var(--text-main);
-      font-family: 'Segoe UI', Roboto, Arial, sans-serif;
-      user-select: none;
+    body.mode-channels {
+      --active-accent: var(--accent-channel);
+      --active-border: #69f0c8;
     }
-
-    header {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 76px;
-      padding: 0 36px;
+    body:not(.mode-channels) {
+      --active-accent: var(--accent);
+      --active-border: #8bb6ff;
+    }
+    .wrap {
+      max-width: 1280px;
+      margin: auto;
+      padding: 18px 18px 40px;
+    }
+    .top-bar {
       display: flex;
+      flex-wrap: wrap;
       align-items: center;
       justify-content: space-between;
-      background: linear-gradient(180deg, rgba(10, 10, 10, 0.96) 0%, rgba(20, 20, 20, 0.88) 100%);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-      z-index: 20;
+      gap: 14px;
+      margin-bottom: 16px;
     }
-
-    .brand {
-      font-size: 28px;
+    .brand-and-modes {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 16px;
+      flex: 1;
+    }
+    .logo-netflix {
+      margin: 0 4px 0 0;
+      font-family: "Arial Black", "Impact", Arial, sans-serif;
+      font-size: 32px;
       font-weight: 900;
       letter-spacing: 2px;
-      color: var(--accent);
+      line-height: 1;
       text-transform: uppercase;
-      flex-shrink: 0;
+      color: #e50914;
+      text-shadow:
+        1px 1px 0 #7a0309,
+        2px 2px 0 #570206,
+        3px 3px 0 #380104,
+        0 6px 18px rgba(229, 9, 20, 0.45);
+      transform: scaleY(1.12);
+      user-select: none;
+      white-space: nowrap;
     }
-
-    .nav-group {
+    .mode-switch {
       display: flex;
-      align-items: center;
-      gap: 24px;
-    }
-
-    .tabs {
-      display: flex;
-      align-items: center;
       gap: 12px;
+      flex: 1;
+      min-width: 280px;
+      max-width: 620px;
     }
-
-    .num-tabs {
+    .mode-btn {
+      flex: 1;
+      min-height: 58px;
+      padding: 14px 24px;
+      background: var(--panel);
+      color: var(--text);
+      border: 2px solid var(--border);
+      border-radius: 14px;
+      font-size: 19px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: background .15s, border-color .15s, transform .12s, box-shadow .15s;
+    }
+    .mode-btn:hover, .mode-btn.focused {
+      background: var(--panel-hover);
+      border-color: var(--accent-focus);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px rgba(0, 0, 0, .35);
+      outline: none;
+    }
+    .mode-btn.active[data-mode="channels"] {
+      background: var(--accent-channel);
+      border-color: #69f0c8;
+      box-shadow: 0 6px 20px rgba(31, 138, 107, .35);
+    }
+    .mode-btn.active[data-mode="movies"] {
+      background: var(--accent);
+      border-color: #8bb6ff;
+      box-shadow: 0 6px 20px rgba(49, 95, 202, .35);
+    }
+    .search-box {
       display: flex;
       align-items: center;
       gap: 8px;
+      background: var(--panel);
+      border: 2px solid var(--border);
+      border-radius: 999px;
+      padding: 7px 13px;
+      width: 230px;
+      max-width: 100%;
+      transition: border-color .15s, box-shadow .15s;
     }
-
-    .tab-btn,
-    .num-btn {
-      background: #242424;
-      color: var(--text-muted);
-      border: 3px solid transparent;
-      border-radius: 6px;
-      cursor: pointer;
+    .search-box.focused,
+    .search-box:focus-within {
+      border-color: var(--accent-focus);
+      box-shadow: 0 0 0 2px rgba(110, 168, 255, .22);
+    }
+    .search-icon {
+      font-size: 14px;
+      line-height: 1;
+      opacity: .9;
+      user-select: none;
+    }
+    .search {
+      width: 100%;
+      border: 0;
+      background: transparent;
+      color: var(--text);
+      font-size: 14px;
       outline: none;
-      touch-action: manipulation;
+    }
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .tab {
+      background: var(--panel);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      padding: 9px 14px;
+      font-size: 14px;
       font-weight: 700;
-      transition: transform 0.14s ease, background-color 0.14s ease, color 0.14s ease, border-color 0.14s ease;
-    }
-
-    .tab-btn {
-      padding: 10px 22px;
-      font-size: 18px;
-    }
-
-    .num-btn {
-      width: 44px;
-      height: 44px;
-      font-size: 17px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .tab-btn.active,
-    .num-btn.active {
-      background: #2f2f2f;
-      color: var(--text-main);
-      border-bottom: 4px solid var(--accent);
-    }
-
-    .tab-btn:focus,
-    .tab-btn.tv-focused,
-    .num-btn:focus,
-    .num-btn.tv-focused {
-      background: #ffffff;
-      color: #000000;
-      border-color: var(--accent);
-      transform: scale(1.06);
-      box-shadow: 0 0 22px rgba(255, 255, 255, 0.45);
-    }
-
-    main {
-      position: fixed;
-      top: 76px;
-      left: 0;
-      width: 100vw;
-      height: calc(100vh - 76px);
-      padding: 20px 36px 24px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .grid-9 {
-      width: 100%;
-      height: 100%;
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      grid-template-rows: repeat(3, 1fr);
-      gap: 18px 22px;
-    }
-
-    .card {
-      position: relative;
-      width: 100%;
-      height: 100%;
-      min-height: 0;
-      background-color: var(--bg-card);
-      border-radius: 10px;
-      overflow: hidden;
-      border: 3px solid transparent;
       cursor: pointer;
-      outline: none;
-      display: flex;
-      align-items: flex-end;
-      text-align: left;
-      touch-action: manipulation;
-      transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+      transition: background .15s, border-color .15s, transform .12s;
     }
-
-    .card img {
-      position: absolute;
-      inset: 0;
+    .tab:hover, .tab.focused {
+      background: var(--panel-hover);
+      border-color: var(--accent-focus);
+      transform: translateY(-1px);
+      outline: none;
+    }
+    .tab.active {
+      background: var(--active-accent);
+      border-color: var(--active-border);
+      color: #fff;
+    }
+    .count {
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 16px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 14px;
+    }
+    @media (max-width: 1024px) {
+      .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    }
+    @media (max-width: 640px) {
+      .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .mode-btn { font-size: 17px; padding: 12px 16px; min-height: 52px; }
+    }
+    .card {
+      display: flex;
+      flex-direction: column;
+      background: var(--panel);
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      color: var(--text);
+      text-decoration: none;
+      transition: transform .14s ease, border-color .14s ease, background .14s ease, box-shadow .14s ease;
+    }
+    .card:hover, .card.focused {
+      background: var(--panel-hover);
+      border-color: var(--accent-focus);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 22px rgba(0, 0, 0, .45);
+      outline: none;
+    }
+    .poster-box {
+      position: relative;
+      aspect-ratio: 2 / 3;
+      width: 100%;
+      background: #141926;
+      overflow: hidden;
+    }
+    .poster-box img {
       width: 100%;
       height: 100%;
       object-fit: cover;
-      pointer-events: none;
-      transition: transform 0.22s ease;
+      display: block;
     }
-
-    .card::after {
-      content: "";
+    .idx-badge {
       position: absolute;
-      inset: 0;
-      background: linear-gradient(
-        180deg,
-        rgba(0, 0, 0, 0.05) 30%,
-        rgba(0, 0, 0, 0.72) 78%,
-        rgba(0, 0, 0, 0.94) 100%
-      );
-      z-index: 1;
-      pointer-events: none;
+      top: 8px;
+      left: 8px;
+      background: rgba(16, 19, 27, .85);
+      border: 1px solid rgba(255, 255, 255, .18);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 7px;
+      border-radius: 6px;
+    }
+    .card-body {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      flex: 1;
+      padding: 11px;
+      gap: 10px;
+    }
+    .name {
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 1.3;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .watch {
+      display: block;
+      text-align: center;
+      background: var(--active-accent);
+      color: #fff;
+      padding: 7px 10px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 700;
     }
 
-    .card-info {
-      position: relative;
-      z-index: 2;
-      width: 100%;
-      padding: 12px 16px;
+    /* Player Overlay */
+    .player-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: #000;
+      display: none;
+      flex-direction: column;
+      width: 100vw;
+      height: 100vh;
+    }
+    .player-overlay.open {
+      display: flex;
+    }
+    .player-hud {
+      position: absolute;
+      top: 14px;
+      left: 14px;
+      right: 14px;
+      z-index: 20;
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 10px;
       pointer-events: none;
+      opacity: 0;
+      transition: opacity .2s ease;
     }
-
-    .card-title {
-      font-size: 18px;
+    .player-overlay:hover .player-hud,
+    .player-overlay.hud-visible .player-hud {
+      opacity: 1;
+    }
+    .player-title {
+      background: rgba(16, 19, 27, .85);
+      border: 1px solid rgba(255, 255, 255, .18);
+      padding: 8px 14px;
+      border-radius: 10px;
+      font-size: 14px;
       font-weight: 700;
-      color: #ffffff;
-      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.9);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      pointer-events: auto;
     }
-
-    .card-badge {
-      flex-shrink: 0;
-      font-size: 11px;
-      font-weight: 800;
-      letter-spacing: 0.6px;
-      text-transform: uppercase;
-      padding: 4px 8px;
-      border-radius: 4px;
-      background: rgba(229, 9, 20, 0.92);
-      color: #ffffff;
+    .player-actions {
+      display: flex;
+      gap: 8px;
+      pointer-events: auto;
     }
-
-    .card.empty-slot {
-      background: rgba(255, 255, 255, 0.03);
-      border: 2px dashed rgba(255, 255, 255, 0.12);
-      align-items: center;
-      justify-content: center;
-      cursor: default;
-    }
-
-    .card.empty-slot::after {
-      display: none;
-    }
-
-    .card.empty-slot span {
-      color: rgba(255, 255, 255, 0.25);
-      font-size: 15px;
-      font-weight: 600;
-    }
-
-    .card:focus,
-    .card.tv-focused {
-      border-color: var(--focus-ring);
-      transform: scale(1.03);
-      box-shadow: 0 0 0 3px var(--accent), 0 14px 32px rgba(0, 0, 0, 0.85);
-      z-index: 5;
-    }
-
-    .card:focus img,
-    .card.tv-focused img {
-      transform: scale(1.06);
-    }
-
-    .player-overlay {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background-color: #000000;
-      z-index: 9999;
-    }
-
-    .player-overlay.active {
-      display: block;
-    }
-
-    .player-overlay iframe {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      border: none;
-      background: #000000;
-      z-index: 10000;
-    }
-
-    .back-btn {
-      position: fixed;
-      top: 18px;
-      left: 20px;
-      z-index: 10001;
-      background: rgba(20, 20, 20, 0.92);
-      color: #ffffff;
-      border: 2px solid rgba(255, 255, 255, 0.75);
-      border-radius: 8px;
-      padding: 10px 18px;
-      font-size: 16px;
+    .player-btn {
+      background: rgba(27, 33, 48, .92);
+      color: #fff;
+      border: 2px solid #485675;
+      border-radius: 10px;
+      padding: 8px 14px;
+      font-size: 13px;
       font-weight: 700;
       cursor: pointer;
-      outline: none;
-      touch-action: manipulation;
-      transition: background-color 0.15s ease, transform 0.15s ease, border-color 0.15s ease;
     }
-
-    .back-btn:hover,
-    .back-btn:focus,
-    .back-btn.tv-focused {
-      background: var(--accent);
-      border-color: #ffffff;
-      color: #ffffff;
-      transform: scale(1.05);
+    .player-btn:hover, .player-btn:focus {
+      border-color: var(--accent-focus);
+      background: var(--panel-hover);
+      outline: none;
+    }
+    .player-btn.close-btn {
+      background: #b91c1c;
+      border-color: #f87171;
+    }
+    .player-frame-wrap {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      flex: 1;
+    }
+    .player-frame-wrap iframe,
+    .player-frame-wrap video {
+      width: 100%;
+      height: 100%;
+      border: 0;
+      display: block;
+      background: #000;
     }
   </style>
 </head>
-<body>
-  <header>
-    <div class="brand">GUINEMI GS</div>
-
-    <div class="nav-group">
-      <nav class="tabs" aria-label="Categorias">
-        <button type="button" id="tabTv" class="tab-btn active" data-tab="tv" tabindex="0">Canais de TV</button>
-        <button type="button" id="tabMovies" class="tab-btn" data-tab="movies" tabindex="0">Filmes</button>
-      </nav>
-
-      <div id="numTabs" class="num-tabs" aria-label="Abas numéricas">
-        <button type="button" class="num-btn active" data-page="0" tabindex="0">1</button>
-        <button type="button" class="num-btn" data-page="1" tabindex="0">2</button>
-        <button type="button" class="num-btn" data-page="2" tabindex="0">3</button>
-        <button type="button" class="num-btn" data-page="3" tabindex="0">4</button>
-        <button type="button" class="num-btn" data-page="4" tabindex="0">5</button>
+<body class="mode-channels">
+  <main class="wrap">
+    <div class="top-bar">
+      <div class="brand-and-modes">
+        <div class="logo-netflix" aria-label="GUINEMI">GUINEMI</div>
+        <div class="mode-switch" role="tablist" aria-label="Canais e Filmes">
+          <button type="button" class="mode-btn active" id="btnChannels" data-mode="channels">Canais</button>
+          <button type="button" class="mode-btn" id="btnMovies" data-mode="movies">Filmes</button>
+        </div>
       </div>
-    </div>
-  </header>
 
-  <main>
-    <div id="grid9" class="grid-9"></div>
+      <label class="search-box" id="searchBox" for="q" aria-label="Pesquisar">
+        <span class="search-icon">🔍</span>
+        <input class="search" id="q" placeholder="Pesquisar..." autocomplete="off">
+      </label>
+    </div>
+
+    <nav class="tabs" id="tabs" aria-label="Abas de números"></nav>
+
+    <div class="count" id="count"></div>
+
+    <section class="grid" id="list" aria-label="Grade de itens"></section>
   </main>
 
-  <div id="playerOverlay" class="player-overlay" aria-hidden="true">
-    <button type="button" id="backBtn" class="back-btn" tabindex="0">◄ Voltar</button>
-    <iframe
-      id="playerFrame"
-      src=""
-      tabindex="-1"
-      referrerpolicy="strict-origin-when-cross-origin"
-      allow="autoplay; encrypted-media; fullscreen; picture-in-picture; web-share"
-      allowfullscreen
-    ></iframe>
+  <div class="player-overlay hud-visible" id="playerOverlay" aria-hidden="true">
+    <div class="player-hud">
+      <div class="player-title" id="playerTitle">Reproduzindo</div>
+      <div class="player-actions">
+        <button type="button" class="player-btn" id="btnToggleFs">Tela Cheia</button>
+        <button type="button" class="player-btn close-btn" id="btnClosePlayer">Voltar (ESC)</button>
+      </div>
+    </div>
+    <div class="player-frame-wrap" id="playerFrameWrap"></div>
   </div>
 
   <script>
-    const CATALOG = {
-      tv: [
-        {
-          title: "AMC",
-          cover: "https://2.dpetftvwrc.workers.dev/amc.png",
-          url: "https://sinalpublicoetv.vercel.app/?id=amc"
-        },
-        {
-          title: "AXN",
-          cover: "https://2.dpetftvwrc.workers.dev/axn.png",
-          url: "https://sinalpublicoetv.vercel.app/?id=axn"
-        },
-        {
-          title: "ADULT SWIN",
-          cover: "https://2.dpetftvwrc.workers.dev/adultswim.png",
-          url: "https://sinalpublicoetv.vercel.app/?id=adultswim"
-        },
-        {
-          title: "ANIMAL PLANET",
-          cover: "https://2.dpetftvwrc.workers.dev/animalplanet.png",
-          url: "https://sinalpublicoetv.vercel.app/?id=animalplanet"
-        },
-        {
-          title: "AE",
-          cover: "https://2.dpetftvwrc.workers.dev/ae.png",
-          url: "https://sinalpublicoetv.vercel.app/?id=ae"
-        },
-        {
-          title: "CARTOON NETWORK",
-          cover: "https://2.dpetftvwrc.workers.dev/cartoonnetwork.png",
-          url: "https://sinalpublicoetv.vercel.app/?id=cartoonnetwork"
-        },
-        {
-          title: "Canal 07",
-          cover: "https://images.unsplash.com/photo-1536440136628-849c177e76a1?auto=format&fit=crop&w=800&q=80",
-          url: "https://sinalpublicoetv.vercel.app/?id=cartoonnetwork"
-        },
-        {
-          title: "Canal 08",
-          cover: "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=800&q=80",
-          url: "https://sinalpublicoetv.vercel.app/?id=cartoonnetwork"
-        },
-        {
-          title: "Canal 09",
-          cover: "https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?auto=format&fit=crop&w=800&q=80",
-          url: "https://sinalpublicoetv.vercel.app/?id=cartoonnetwork"
-        },
-        {
-          title: "Canal 10",
-          cover: "https://images.unsplash.com/photo-1478720568477-152d9b164e26?auto=format&fit=crop&w=800&q=80",
-          url: "https://sinalpublicoetv.vercel.app/?id=cartoonnetwork"
-        },
-        {
-          title: "Canal 11",
-          cover: "https://images.unsplash.com/photo-1542204165-65bf26472b9b?auto=format&fit=crop&w=800&q=80",
-          url: "https://sinalpublicoetv.vercel.app/?id=cartoonnetwork"
-        },
-        {
-          title: "Canal 12",
-          cover: "https://images.unsplash.com/photo-1616530940355-351fabd9524b?auto=format&fit=crop&w=800&q=80",
-          url: "https://sinalpublicoetv.vercel.app/?id=cartoonnetwork"
-        },
-        {
-          title: "Canal 13",
-          cover: "https://images.unsplash.com/photo-1505686994434-e3cc5abf1330?auto=format&fit=crop&w=800&q=80",
-          url: "https://sinalpublicoetv.vercel.app/?id=cartoonnetwork"
-        },
-        {
-          title: "Canal 14",
-          cover: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=800&q=80",
-          url: "https://sinalpublicoetv.vercel.app/?id=cartoonnetwork"
-        },
-        {
-          title: "Canal 15",
-          cover: "https://images.unsplash.com/photo-1460881680858-30d872d5b530?auto=format&fit=crop&w=800&q=80",
-          url: "https://sinalpublicoetv.vercel.app/?id=cartoonnetwork"
-        },
-        {
-          title: "Canal 16",
-          cover: "https://images.unsplash.com/photo-1524985069026-dd778a71c7b4?auto=format&fit=crop&w=800&q=80",
-          url: "https://sinalpublicoetv.vercel.app/?id=cartoonnetwork"
-        },
-        {
-          title: "Canal 17",
-          cover: "https://images.unsplash.com/photo-1440404653325-ab127d49abc1?auto=format&fit=crop&w=800&q=80",
-          url: "https://sinalpublicoetv.vercel.app/?id=cartoonnetwork"
-        },
-        {
-          title: "Canal 18",
-          cover: "https://images.unsplash.com/photo-1513106580091-1d82408b8cd6?auto=format&fit=crop&w=800&q=80",
-          url: "https://sinalpublicoetv.vercel.app/?id=cartoonnetwork"
-        }
-      ],
-      movies: [
-        {
-          title: "TROPA DE ELITE",
-          cover: "https://www.palestraspimentel.com/wp-content/uploads/backup/2019/08/capitao-nascimento-ator-wagner-moura.jpg",
-          url: "https://www.youtube.com/embed/2BLPFl2YHe8?si=QGbK-xc9UiacLhir"
-        },
-        {
-          title: "MERCENARIOS 2",
-          cover: "https://filmdump.wordpress.com/wp-content/uploads/2014/06/expendable-2-1.jpg",
-          url: "https://www.youtube.com/embed/SBoODpO-DT0?si=DXyW8ffCFSaOyb7n"
-        },
-        {
-          title: "O QUE SERA DE NOZES",
-          cover: "https://br.web.img3.acsta.net/r_1920_1080/pictures/14/05/23/11/23/187018.jpg",
-          url: "https://youtu.be/dru4r1zx0zo?si=VmOGzwk5i_vxcgvI"
-        },
-        {
-          title: "COLOMBIANA 2",
-          cover: "https://www.querofilme.com.br/images/posters/tw/1906-colombiana-2-1.webp",
-          url: "https://youtu.be/P8lkmMGDnYg?si=gZogq1cooJ2TCvge"
-        },
-        {
-          title: "ESQUECERAM DE MIM",
-          cover: "https://www.famdvd.com.br/media/tmp/webp/catalog/product/cache/1/image/600x/9df78eab33525d08d6e5fb8d27136e95/b/d/bd_esqueceram_de_mim_luva_1_1_png.webp",
-          url: "https://youtu.be/Tf1GIhvxywc?si=Rg6B4Q4vyZhtiUJX"
-        },
-        {
-          title: "Filme 06",
-          cover: "https://images.unsplash.com/photo-1616530940355-351fabd9524b?auto=format&fit=crop&w=800&q=80",
-          url: "https://sinalpublicoetv.vercel.app/?id=cartoonnetwork"
-        },
-        {
-          title: "Filme 07",
-          cover: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=800&q=80",
-          url: "https://sinalpublicoetv.vercel.app/?id=cartoonnetwork"
-        },
-        {
-          title: "Filme 08",
-          cover: "https://images.unsplash.com/photo-1524985069026-dd778a71c7b4?auto=format&fit=crop&w=800&q=80",
-          url: "https://sinalpublicoetv.vercel.app/?id=cartoonnetwork"
-        },
-        {
-          title: "Filme 09",
-          cover: "https://images.unsplash.com/photo-1440404653325-ab127d49abc1?auto=format&fit=crop&w=800&q=80",
-          url: "https://sinalpublicoetv.vercel.app/?id=cartoonnetwork"
-        },
-        {
-          title: "Filme 10",
-          cover: "https://images.unsplash.com/photo-1574375927938-d5a98e8ffe85?auto=format&fit=crop&w=800&q=80",
-          url: "https://sinalpublicoetv.vercel.app/?id=cartoonnetwork"
-        },
-        {
-          title: "Filme 11",
-          cover: "https://images.unsplash.com/photo-1522869635100-9f4c5e86aa37?auto=format&fit=crop&w=800&q=80",
-          url: "https://sinalpublicoetv.vercel.app/?id=cartoonnetwork"
-        },
-        {
-          title: "Filme 12",
-          cover: "https://images.unsplash.com/photo-1593784991095-a205069470b6?auto=format&fit=crop&w=800&q=80",
-          url: "https://sinalpublicoetv.vercel.app/?id=cartoonnetwork"
-        },
-        {
-          title: "Filme 13",
-          cover: "https://images.unsplash.com/photo-1585647347483-22b66260dfff?auto=format&fit=crop&w=800&q=80",
-          url: "https://sinalpublicoetv.vercel.app/?id=cartoonnetwork"
-        },
-        {
-          title: "Filme 14",
-          cover: "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?auto=format&fit=crop&w=800&q=80",
-          url: "https://sinalpublicoetv.vercel.app/?id=cartoonnetwork"
-        },
-        {
-          title: "Filme 15",
-          cover: "https://images.unsplash.com/photo-1505686994434-e3cc5abf1330?auto=format&fit=crop&w=800&q=80",
-          url: "https://sinalpublicoetv.vercel.app/?id=cartoonnetwork"
-        },
-        {
-          title: "Filme 16",
-          cover: "https://images.unsplash.com/photo-1460881680858-30d872d5b530?auto=format&fit=crop&w=800&q=80",
-          url: "https://sinalpublicoetv.vercel.app/?id=cartoonnetwork"
-        },
-        {
-          title: "Filme 17",
-          cover: "https://images.unsplash.com/photo-1513106580091-1d82408b8cd6?auto=format&fit=crop&w=800&q=80",
-          url: "https://sinalpublicoetv.vercel.app/?id=cartoonnetwork"
-        },
-        {
-          title: "Filme 18",
-          cover: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80",
-          url: "https://sinalpublicoetv.vercel.app/?id=cartoonnetwork"
-        }
-      ]
-    };
+    /* =========================================================================
+       COLINHA RÁPIDA PARA ADICIONAR CANAL OU FILME:
+       {
+         title: "NOME DO CANAL OU FILME",
+         cover: "LINK_DA_IMAGEM_DA_CAPA", // deixe "" para capa automática
+         url:   "LINK_DO_PLAYER_OU_DRIVE"
+       },
+       ========================================================================= */
 
-    const PAGE_SIZE = 9;
-    const NUM_TABS_COUNT = 5;
+    const CHANNEL_EMBED_URL = "https://sinalpublicoetv.vercel.app/?id=ae&autoplay=1";
 
-    const tabTv = document.getElementById("tabTv");
-    const tabMovies = document.getElementById("tabMovies");
-    const numBtns = Array.from(document.querySelectorAll(".num-btn"));
-    const grid9 = document.getElementById("grid9");
+    const CHANNELS = [
+      { title: "A&E Ao Vivo (Sinal Público)", cover: "https://br.web.img3.acsta.net/c_300_300/pictures/19/08/21/17/45/3102941.jpg", url: CHANNEL_EMBED_URL },
+      { title: "AMC", cover: "https://2.dpetftvwrc.workers.dev/amc.png", url: "https://sinalpublicoetv.vercel.app/?id=amc" },
+      { title: "BAND SPORTS", cover: "https://2.dpetftvwrc.workers.dev/bandsports.png", url: "https://sinalpublicoetv.vercel.app/?id=bandsports" },
+      { title: "CARTOON NTWORK", cover: "https://2.dpetftvwrc.workers.dev/cartoonnetwork.png", url: "https://sinalpublicoetv.vercel.app/?id=cartoonnetwork" },
+      { title: "Canal 05 - Desenhos & Família", cover: "", url: "#canal-5" },
+      { title: "Canal 06 - Documentários", cover: "", url: "#canal-6" },
+      { title: "Canal 07 - Música & Clipes", cover: "", url: "#canal-7" },
+      { title: "Canal 08 - Clássicos & Retro", cover: "", url: "#canal-8" },
+      { title: "Canal 09 - Sci-Fi & Fantasia", cover: "", url: "#canal-9" },
+      { title: "Canal 10 - Comédia & Variedades", cover: "", url: "#canal-10" },
+      { title: "Canal 11 - Cinema Nacional", cover: "", url: "#canal-11" },
+      { title: "Canal 12 - Anime & Cultura", cover: "", url: "#canal-12" }
+    ];
+
+    const FANTASIA_MOVIES = [
+      { title: "Transformers Despertas das Feras 2023", cover: "https://br.web.img3.acsta.net/c_300_300/pictures/23/04/27/15/20/2468619.jpg", url: "https://drive.google.com/file/d/1XnTplB_zplPPGtY7yqEDqisHYL3KLL9H" },
+      { title: "Indiana Jones e a reliquia do Destino 2023", cover: "https://br.web.img3.acsta.net/c_300_300/pictures/15/11/12/20/00/480610.jpg", url: "https://drive.google.com/file/d/1YFQc5yicrdh4hYWwnc53tZlt2uhWxBiW" },
+      { title: "65 ameaça pre-historica 2023", cover: "https://br.web.img3.acsta.net/c_300_300/pictures/23/02/28/18/38/4152410.jpg", url: "https://drive.google.com/file/d/1W6sI_4lavg2DpjnxI12Ggv3zVVfom7Z1" },
+      { title: "peter pan e wendy 2023", cover: "https://br.web.img2.acsta.net/c_300_300/pictures/23/02/28/19/28/0615396.jpg", url: "https://drive.google.com/file/d/1i0VCcAqtU-Iwo9p4BVAHlmiYb2E0AJ0C" },
+      { title: "Flora e ulisses 2023", cover: "https://resizing.flixster.com/NJz-CnhgErwTRndNiVGWyDyrsPg=/300x300/v2/https://flxt.tmsimg.com/assets/p18163076_v_v12_ah.jpg", url: "https://drive.google.com/file/d/17mKsXbVF-Qskk3xVhGXy_rPyjUNmgxbC" },
+      { title: "terra dos sonhos 2023", cover: "https://br.web.img3.acsta.net/c_300_300/pictures/22/10/12/10/51/3005103.jpg", url: "https://drive.google.com/file/d/1la3iLr6N9gDinB2G9yJEltzo9Gc3TijN" },
+      { title: "chupa cabra 2023", cover: "https://filmmusicreporter.com/wp-content/uploads/2023/04/va-11.jpeg", url: "https://drive.google.com/file/d/1s5F6gggfeeq2CyJkr3O19OIh1oBe33Qo" },
+      { title: "os cavaleiros do zodiaco 2023", cover: "https://filmmusicreporter.com/wp-content/uploads/2023/04/vca-11.jpeg", url: "https://drive.google.com/file/d/1pr2jFclbkW63cuSbIJ2hn7UqdDO3oXvo" },
+      { title: "power ranger eterns 2023", cover: "https://br.web.img3.acsta.net/c_300_300/pictures/23/03/23/18/11/0781254.jpg", url: "https://drive.google.com/file/d/1-4j-bQvL7eTUOe-MoVTPrsXuG7RkVdl5" },
+      { title: "DUNGEONS & DRAGONS 2023", cover: "https://sm.ign.com/t/ign_br/movie/d/dungeons-d/dungeons-dragons-honra-entre-rebeldes_ascs.300.jpg", url: "https://drive.google.com/file/d/15M5oGkUjVodDqGeNR52ja090R54s-olU" },
+      { title: "Avatar 2 2022", cover: "https://i.scdn.co/image/ab67616d00001e02d00720b1aaacb7821125c937", url: "https://drive.google.com/file/d/1iyPsF7pT4iRHS3Gu4GOKGsfDvrhZQEh8" },
+      { title: "Matilda: O Musical 2022", cover: "https://br.web.img2.acsta.net/c_300_300/pictures/22/06/16/09/49/5182966.jpg", url: "https://drive.google.com/file/d/1gGNeiQLBphej3NSQYRaEJa3aQMJR5LK1" },
+      { title: "Monster High - O Filme 2022", cover: "https://br.web.img2.acsta.net/c_300_300/pictures/22/09/26/23/46/5740207.jpg", url: "https://drive.google.com/file/d/1-cUwA6WPzfBNOAJu3K3mrtnSJ7VddX2K" },
+      { title: "Uma Mumia No Walloween 2 2022", cover: "https://br.web.img3.acsta.net/c_300_300/pictures/21/09/29/18/28/3513458.jpg", url: "https://drive.google.com/file/d/1aRkoHx9OoXRaTwsTIp9zL6ARcrTFiJ_u" },
+      { title: "O Troll da Montanha 2022", cover: "https://br.web.img3.acsta.net/c_300_300/pictures/22/12/01/07/43/2833163.jpg", url: "https://drive.google.com/file/d/1-MC1Yq4mJUvYmmO3dRrqkgA3LDyyBU5e" },
+      { title: "A Escola do Bem e do Mal 2022", cover: "https://br.web.img2.acsta.net/c_300_300/pictures/22/07/21/21/14/2883554.png", url: "https://drive.google.com/file/d/16x7f9pdpiqoNA0MI_hPo5rmh0QlY3GQM" },
+      { title: "Os Tres Desejos da Cinderela 2022", cover: "https://br.web.img3.acsta.net/c_300_300/pictures/23/03/13/16/17/0717106.png", url: "https://drive.google.com/file/d/1Ux5hMFqIJuZ-953ioNllbPdwJohW9SwO" },
+      { title: "Space Jam legacy 2021", cover: "https://br.web.img3.acsta.net/c_300_300/pictures/21/08/02/19/37/2769156.jpg", url: "https://drive.google.com/file/d/1tFv9Am0xG3DV04i-O0LV0_reHLhoM2Ow" },
+      { title: "duna 2022", cover: "https://br.web.img3.acsta.net/c_300_300/pictures/21/10/05/16/34/3730759.jpg", url: "https://drive.google.com/file/d/1tUw0yC5FiYQVLLj8nj4Iw-a4drZjpHzG" },
+      { title: "Rainbow 2022", cover: "https://br.web.img3.acsta.net/c_300_300/pictures/22/06/06/11/38/2832120.jpg", url: "https://drive.google.com/file/d/1TCQHBTIPBhm8XSoZnULyXvAmEwwmR028" },
+      { title: "Amor e Monstros 2021", cover: "https://i.scdn.co/image/ab67706c0000da8490adbe8a0f7dc1c23a1bfc4e", url: "https://drive.google.com/file/d/1HRUMO4rFAI0q8-sVffsIoemjkR48X6uW" },
+      { title: "Pinóquio 2022", cover: "https://br.web.img3.acsta.net/c_300_300/pictures/22/08/24/18/58/3608416.jpg", url: "https://drive.google.com/file/d/1OJ7PETX3-w2PWDYJHHQB5QKij4MjzqLN" },
+      { title: "Alice no Mundo da Internet 2022", cover: "https://br.web.img2.acsta.net/c_300_300/pictures/22/09/15/23/24/4235044.jpg", url: "https://drive.google.com/file/d/1azNx6_u6C6_BnGvGpTyyN4hlZUymFNl-" },
+      { title: "Pluft o Fantasminha 2022", cover: "https://br.web.img3.acsta.net/c_300_300/pictures/22/05/18/16/16/1006653.jpg", url: "https://drive.google.com/file/d/10dE-BsO6B7NonNk5CLAgS01lTBHWdNJW" },
+      { title: "O Mundo Magico de Rufus 2022", cover: "https://resizing.flixster.com/n3WL2q7BMUlhIi5BU_cFChnfhjk=/300x300/v2/https://flxt.tmsimg.com/assets/p18110008_p_v13_aa.jpg", url: "https://drive.google.com/file/d/1JdaqRUEhVC_JuIJrNyW6TgewY_qo8Int" },
+      { title: "O Projeto Adam 2022", cover: "https://br.web.img2.acsta.net/c_300_300/pictures/22/03/02/17/11/3732338.png", url: "https://drive.google.com/file/d/1U1ecvrPEfYIft8EW9JwqOXTqZJT8qoXA" },
+      { title: "Era Uma Vez Um Conto de Fadas 2022", cover: "https://resizing.flixster.com/2xnytefc_FzjJe-BRRLJvglS9d8=/300x300/v2/https://flxt.tmsimg.com/assets/p21350604_v_h9_ad.jpg", url: "https://drive.google.com/file/d/1bhzNYpVfuY7CII4UwUPNj41eOKaEQylr" },
+      { title: "piratas da rua de baixo 2022", cover: "https://is1-ssl.mzstatic.com/image/thumb/Features122/v4/47/4d/33/474d33db-d665-3569-ed2c-d926e3dd2b82/mzl.hgcfmsqt.png/1200x675mf.jpg", url: "https://drive.google.com/file/d/1pDsmG1JmuCGQTxjxBNRxpFsQVZbWP--m" },
+      { title: "Cidade de Gelo 2022", cover: "https://br.web.img2.acsta.net/c_300_300/pictures/21/03/09/09/50/1971107.jpg", url: "https://drive.google.com/file/d/1ILVFUjKp60HOlK_ALxLCBXS9bt9nnaN3" },
+      { title: "Samaritano 2022", cover: "https://br.web.img3.acsta.net/c_300_300/pictures/22/07/18/11/00/5585620.jpg", url: "https://drive.google.com/file/d/1f6o1hXAKZHZY-fvUUu_bk8J9cqiP6GlR" },
+      { title: "era uma vez um genio 2022", cover: "https://br.web.img3.acsta.net/c_300_300/pictures/22/05/20/11/36/5330867.jpg", url: "https://drive.google.com/file/d/1I250NLmJ3P9vYzvUOQj4146SgsH8CQN4" },
+      { title: "Abracadabra 2 2022", cover: "https://br.web.img2.acsta.net/c_300_300/pictures/22/09/12/09/10/0257078.jpg", url: "https://drive.google.com/file/d/1xKURSCE8XQRRzKpeMwl8PbYhhLOuBXRP" },
+      { title: "A Princesa (2022)", cover: "https://br.web.img2.acsta.net/c_300_300/pictures/22/07/21/22/02/1445372.jpg", url: "https://drive.google.com/file/d/1-MBG9rkqlhAJRl-IGv2_DDsrujAqTzUI" },
+      { title: "Fullmetal Alchemist 2022", cover: "https://br.web.img2.acsta.net/c_300_300/pictures/22/08/25/19/36/0999181.png", url: "https://drive.google.com/file/d/14x8tphTAzo2ZIDNyoZsJris49BIpSBgx" },
+      { title: "Obi-Wan Kenobi O Retorno do Jedi 2022", cover: "https://br.web.img3.acsta.net/c_300_300/pictures/22/05/04/18/27/4264718.jpg", url: "https://drive.google.com/file/d/1VpHoHw47faKPDm_l5n-x89-ARG-tZC6Q" },
+      { title: "o homem do norte 2022", cover: "https://m.media-amazon.com/images/I/718MA6H-EVL.jpg", url: "https://drive.google.com/file/d/1Dk2miNE8yb0rQDSL9Wamjma7VeVtmvgN" },
+      { title: "Monster Hunter 2020", cover: "https://br.web.img2.acsta.net/c_300_300/pictures/20/10/14/18/08/4593390.jpg", url: "https://drive.google.com/file/d/1NHDkE13tOX4w34sxIjkIUkOvnDcP5C1C" },
+      { title: "jung E 2022", cover: "https://br.web.img3.acsta.net/c_300_300/pictures/23/01/20/12/19/2283426.jpg", url: "https://drive.google.com/file/d/1UFP3pWlE7w4OhMY7UeOY1NBXw47XWg7x" },
+      { title: "A Dama e o Vagabundo 2020", cover: "https://br.web.img2.acsta.net/c_300_300/pictures/20/10/20/23/17/4001815.jpg", url: "https://drive.google.com/file/d/120bT92bjCy-oo1j1yT8r0dNdWgBE1_jP" },
+      { title: "Jurassic World Domínio 2022", cover: "https://br.web.img3.acsta.net/c_300_300/pictures/22/04/15/22/05/1348210.jpg", url: "https://drive.google.com/file/d/11w0A_NerlmBwXE1QxohjfM2qpJw4056W" },
+      { title: "Animais Fantásticos: Os Segredos de Dumbledore 2022", cover: "https://br.web.img2.acsta.net/c_300_300/pictures/21/12/20/18/14/2741124.jpg", url: "https://drive.google.com/file/d/1uWuMphmDqJ0cEn-2ulyrXiNezIoPPdTq" },
+      { title: "Godzilla VS Kong 2021", cover: "https://br.web.img2.acsta.net/c_300_300/pictures/21/04/01/17/05/2372725.jpg", url: "https://drive.google.com/file/d/1HM76A10LBeWRnibF-htcsI3hvrljjMxl" },
+      { title: "Finch 2021", cover: "https://is2-ssl.mzstatic.com/image/thumb/Music126/v4/a7/44/e7/a744e7d2-77d5-99df-098f-75f6100d9989/780163610222.jpg/600x600bf-60.jpg", url: "https://drive.google.com/file/d/1ZaNQRzWythyR17PzB4Aw859ceaT0nZlF" },
+      { title: "divergente 2016", cover: "https://br.web.img2.acsta.net/c_300_300/pictures/14/02/07/17/46/287879.jpg", url: "https://drive.google.com/file/d/1Ts1alQVzxbE5bQp4GI1CuPlcqDARNr27" },
+      { title: "Jungle Cruise 2021", cover: "https://br.web.img2.acsta.net/c_300_300/pictures/21/07/29/21/41/4810979.jpg", url: "https://drive.google.com/file/d/1saVUu7pios_HRuBhKJcczFOWIq5VfOGi" },
+      { title: "Mortal Combat 2021", cover: "https://br.web.img3.acsta.net/c_300_300/pictures/21/03/31/18/22/5366148.png", url: "https://drive.google.com/file/d/1eznmCdk7tFUOyTvnWRhz1wKtqCBYwFpE" },
+      { title: "Cruella 2021", cover: "https://br.web.img2.acsta.net/c_300_300/pictures/21/04/07/21/13/5564614.jpg", url: "https://drive.google.com/file/d/1af9vZnSdnH70Ar-DlW1xQNBOpMqhyYNV" },
+      { title: "Wolf 2021", cover: "https://br.web.img3.acsta.net/c_300_300/pictures/22/12/02/09/34/5377189.jpg", url: "https://drive.google.com/file/d/13I8L1T-INhneD7LX8jsNLDb3b-eoUXA_" },
+      { title: "Harry Potter 2022", cover: "https://cdn-wp.cadena.com.br/magiafm-florianopolis/uploads/2021/12/17095358/harry-potter-20-anos-de-volta-a-hogwarts-300x300.jpg", url: "https://drive.google.com/file/d/1-UOZ5O4aKBN_W3YaHssII0M-FBZv1YDb" },
+      { title: "mulan 2020", cover: "https://br.web.img2.acsta.net/c_300_300/pictures/19/07/07/21/08/2575568.jpg", url: "https://drive.google.com/file/d/15mBhM8rLugMaHfUaEfXGGKclXuj5HMN5" },
+      { title: "Dora e a Cidade Perdida 2020", cover: "https://br.web.img3.acsta.net/c_300_300/img/30/28/302898514386bf9a281f062b75c315ae.jpg", url: "https://drive.google.com/file/d/1HqPkhZwWJ3-3XS9wKm18JKETDIB6CZP_" },
+      { title: "Sonic 2 - O Filme 2022", cover: "https://br.web.img2.acsta.net/c_300_300/pictures/22/03/14/15/39/4137538.jpg", url: "https://drive.google.com/file/d/1-QGU-bAnpdS1QxHFATIMb2nSsEqQcdDm" },
+      { title: "Sonic: O Filme 2020", cover: "https://br.web.img3.acsta.net/c_300_300/pictures/19/11/12/13/32/5604203.jpg", url: "https://drive.google.com/file/d/1zpQHmz33OQ0pgJU_vKIjZV7BIFihWbCm" },
+      { title: "Pedro Coelho 2 2019", cover: "https://br.web.img3.acsta.net/c_300_300/pictures/21/04/27/18/35/3385718.jpg", url: "https://drive.google.com/file/d/1zVFlb6NcPkHWmOJCkaE8bZYxTYzbjy2V" },
+      { title: "A Jornada Mágica de Emily 2020", cover: "https://resizing.flixster.com/W0vnBl5s1P1YUguv360evgSSsEk=/300x300/v2/https://flxt.tmsimg.com/assets/p18054201_v_v9_ac.jpg", url: "https://drive.google.com/file/d/1h8c5tFay6nzLt4dBVjvnt_MgQUrOxuBE" },
+      { title: "Mogli o Menino Lobo 2018", cover: "https://br.web.img3.acsta.net/c_300_300/pictures/15/08/17/14/09/296609.jpg", url: "https://drive.google.com/file/d/1js6Z88_otW9meXWV9XIn8YvsrJBrfGc4" },
+      { title: "A Filha do Rei 2022", cover: "https://br.web.img3.acsta.net/c_300_300/pictures/22/01/12/18/16/0246390.jpg", url: "https://drive.google.com/file/d/1-2vspjdZ7oRfPzk5xZkTZ9BSRne7M37A" },
+      { title: "Malévola 2 Dona do Mal 2020", cover: "https://br.web.img2.acsta.net/c_300_300/pictures/19/09/26/20/31/2705293.jpg", url: "https://drive.google.com/file/d/1XXj38rTTfVVgk5KU65Nplu3E8tlmF75S" },
+      { title: "Malévola 2014", cover: "https://br.web.img2.acsta.net/c_300_300/img/25/1c/251c38fdee6f00c405bac0631d138565.jpg", url: "https://drive.google.com/file/d/0B99ee0odjIO5VUh5M2FqVTI2dWs" },
+      { title: "Guardiões do Tempo 2022", cover: "https://i.ytimg.com/an/qFTuK_fc25g/1994323670276872850_mq.jpg?v=62f3e106", url: "https://drive.google.com/file/d/11IdhV43ih75A0ndJNqxHmmoauG0RnE_K" },
+      { title: "Aladdin 2019", cover: "https://br.web.img3.acsta.net/c_300_300/pictures/18/10/12/14/51/0818615.jpg", url: "https://drive.google.com/file/d/1djAUHOdKXnzxQBl2_k9ATfRn0sV5YFSD" },
+      { title: "Uma Dobra no Tempo 2018", cover: "https://m.media-amazon.com/images/I/71vCUPLi6rL.__AC_SX300_SY300_QL70_ML2_.jpg", url: "https://drive.google.com/file/d/1xnWiRaZCF3diJmniLo0wiYCuLyC8hKxU" },
+      { title: "Super 8 2011", cover: "https://resizing.flixster.com/rNO2gdyB1Iu0dLpuwTPfNgHxmko=/300x300/v2/https://flxt.tmsimg.com/assets/p8383066_p_v8_aj.jpg", url: "https://drive.google.com/file/d/119dtSwiEjk44R7OAvF-owu0DHt5bq76N" },
+      { title: "Jumanji: Próxima Fase 2020", cover: "https://br.web.img2.acsta.net/c_300_300/img/19/4b/194b6a36f0f7780b768ffcdd8ebe123a.jpg", url: "https://drive.google.com/file/d/1r3MtF-g7nmQY2e3itbT5lnK6N8Z0meM6" },
+      { title: "Jumanji: Bem-vindo à Selva 2017", cover: "https://br.web.img3.acsta.net/c_300_300/pictures/17/07/04/11/06/104970.jpg", url: "https://drive.google.com/file/d/1j5puYj2JzBgDcH0QKIR__UY1o1Zvs022" },
+      { title: "Jumanji [1995]", cover: "https://br.web.img3.acsta.net/c_300_300/pictures/14/08/14/12/20/198981.jpg", url: "https://drive.google.com/file/d/1unTPyh1WvLrG1rDA5_IG4CX1Cg5mfCF1" },
+      { title: "Kong: A Ilha da Caveira 2017", cover: "https://br.web.img2.acsta.net/c_300_300/img/d0/e0/d0e02e175b0a768332d31e65f61a413c.jpg", url: "https://drive.google.com/file/d/1L_lUrO9QS20Kx4pu0yeAH_HyIIrmKOH9" },
+      { title: "king kong 2005", cover: "https://br.web.img2.acsta.net/c_300_300/medias/nmedia/18/35/51/58/18460428.jpg", url: "https://drive.google.com/file/d/17yZ6tOQd5dX5E_C4QKkVGeXt6ZE0ONeg" },
+      { title: "Godzilla 2 Rei dos Monstros 2019", cover: "https://br.web.img2.acsta.net/c_300_300/img/2c/ce/2cce1a4dae0f12e1470dcf5edf5e3176.jpg", url: "https://drive.google.com/file/d/1VR24CsmJAa4sr1KAUDSOdprcFtUs747U" },
+      { title: "Godzilla 2014", cover: "https://br.web.img2.acsta.net/c_300_300/pictures/210/206/21020656_20130719092349108.jpg", url: "https://drive.google.com/file/d/1xz6cxZ-6aPqASUcRChGP6jNjzf2WXr_Y" },
+      { title: "Dumbo 2019", cover: "https://br.web.img2.acsta.net/c_300_300/img/f7/f5/f7f50165c0ee3699d26693a8cf4b402a.jpg", url: "https://drive.google.com/file/d/168dv4-lPwqLOE12sRp_KKOPOkJDbC6sL" },
+      { title: "A Bela e a Fera (2017)", cover: "https://br.web.img2.acsta.net/c_300_300/img/72/88/7288af2fa85d7881bccdd5b09c7e2350.jpg", url: "https://drive.google.com/file/d/1l8J8NZmBI6r-9duVxDSVyT_a4H05jk_6" },
+      { title: "O Caçador e a Rainha do Gelo (2016)", cover: "https://br.web.img3.acsta.net/c_300_300/pictures/16/03/16/17/15/187048.jpg", url: "https://drive.google.com/file/d/1GsXKztYfD5VP7H9NB0v-5RqIVpvgYqXF" },
+      { title: "O Destino de Júpiter (2015)", cover: "https://br.web.img3.acsta.net/c_300_300/pictures/14/03/27/10/26/252369.jpg", url: "https://drive.google.com/file/d/1K_1LrnMVCNIcOSq7iZh14vouNiDDwtWe" },
+      { title: "DPA 3 Uma Aventura no Fim do Mundo (2021)", cover: "https://br.web.img2.acsta.net/c_300_300/pictures/17/02/21/17/33/459072.png", url: "https://drive.google.com/file/d/1-QZlzKNoYMUvmyKBkcvSjhltDSJ0HzBn" },
+      { title: "Eu Acredito em Conto de Fadas 2022", cover: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSYPRQncV-RiYTuVYkbTNoaoYfeya66gcJDGAhsf2fa5kfl44TGRJQw1Qs5X9huoOUWofc&usqp=CAU", url: "https://drive.google.com/file/d/1-77eppZbXkU7oM9SoVmC5IYGNl8Ansob" },
+      { title: "As Verdadeiras Aventuras do Menino Lobo 2019", cover: "https://resizing.flixster.com/NkOs7M6mQBedRXl_iVIPVWJvxv8=/300x300/v2/https://flxt.tmsimg.com/assets/p17387281_v_v10_ac.jpg", url: "https://drive.google.com/file/d/1-4GhK0z2m1RfRWtRVfwmO3tMGm6095GU" },
+      { title: "Turma da monica laços 2017", cover: "https://br.web.img3.acsta.net/c_300_300/pictures/19/04/03/18/25/1334771.jpg", url: "https://drive.google.com/file/d/1_FU_X41pma5lONPADhj4Q2zNzrzfY05B" },
+      { title: "Furia de Titãs 2014", cover: "https://br.web.img3.acsta.net/c_300_300/medias/nmedia/18/89/39/66/20044647.jpg", url: "https://drive.google.com/file/d/1AqbEvGSqB6LAFUjfsojKyDle6K4N0U0U" },
+      { title: "Furia de Titãs 2012", cover: "https://br.web.img2.acsta.net/c_300_300/medias/nmedia/18/70/88/43/19255647.jpg", url: "https://drive.google.com/file/d/16KnnDd636kanXX1-R8cyJmXYcb_V3OVa" },
+      { title: "Mentes Sombrias [2018]", cover: "https://br.web.img3.acsta.net/c_300_300/pictures/18/03/28/16/05/1122383.jpg", url: "https://drive.google.com/file/d/1ToIMqvv3mY7UT41nbMOx-_Zw2xTGobbf" },
+      { title: "Bumblebee 2018", cover: "https://br.web.img3.acsta.net/c_300_300/img/db/f3/dbf3c1ffd1e4e140d4e92a90e2acd634.jpg", url: "https://drive.google.com/file/d/1c3mnQclu-Qal8Yzl0WxqLSQ6uUeu9jiX" },
+      { title: "Transformers O Filme 2007", cover: "https://br.web.img2.acsta.net/c_300_300/medias/nmedia/18/62/81/09/18784915.jpg", url: "https://drive.google.com/file/d/1sE1OFGRBvD49ciRO4RtKLZDU_MR15Dc3" },
+      { title: "Transformers 2 A Vingança Dos Derrotados 2009", cover: "https://br.web.img3.acsta.net/c_300_300/medias/nmedia/18/87/89/11/19962603.jpg", url: "https://drive.google.com/file/d/1yaqIjDZaWeaXOIq7gb0-TVqXGHA8D0ae" },
+      { title: "Transformers 3 O Lado Oculto Da Lua 2011", cover: "https://br.web.img3.acsta.net/c_300_300/medias/nmedia/18/79/54/19/19734117.jpg", url: "https://drive.google.com/file/d/12Gik0v7WNFO-3Bjj-iX0EEkKrmE9AMMY" },
+      { title: "Transformers 4 A Era Da Extinção 2014", cover: "https://br.web.img3.acsta.net/c_300_300/img/b7/32/b732477ed2af1dd1e18be28a3ba15450.jpg", url: "https://drive.google.com/file/d/1Cver5wp3r8hlVodu7EQktmLoXEAzfWn1" },
+      { title: "Transformers 5 O Último Cavaleiro 2017", cover: "https://br.web.img3.acsta.net/c_300_300/pictures/16/05/19/12/58/554080.jpg", url: "https://drive.google.com/file/d/1Vfacmbd5mTYHtb6sq77cUbCeEjENlVUc" },
+      { title: "Nas Garras 2021", cover: "https://resizing.flixster.com/xRQk_WQ83gdM5ziw5VOP5lN5rtI=/300x300/v2/https://flxt.tmsimg.com/assets/p20202131_p_v13_aa.jpg", url: "https://drive.google.com/file/d/1-h1jpxWXkhWZE6hKa_h5J-HwER_huRrT" },
+      { title: "Jurassic Park 2 O Mundo Perdido 1998", cover: "https://br.web.img2.acsta.net/c_300_300/medias/nmedia/00/02/11/66/affiche.jpg", url: "https://drive.google.com/file/d/1cxW-Ko-7H6L071heH7XYu1mrD1iHUupB" },
+      { title: "Jurassic World 4 O Mundo Dos Dinossauros 2015", cover: "https://br.web.img3.acsta.net/c_300_300/pictures/15/04/22/16/28/291371.jpg", url: "https://drive.google.com/file/d/15haJPIX2TVzz4FMZp3GU9uACOWxhFQ2o" },
+      { title: "Jurassic Park 1 O Parque dos Dinossauros 1993", cover: "https://assets-prd.ignimgs.com/2022/06/09/warpathjp-1654793911340.jpg?width=300&crop=1%3A1%2Csmart", url: "https://drive.google.com/file/d/11jHcAjJM3LO9XiGP7gY4vxZLrqqT_RQG" },
+      { title: "Jurassic World 5 Reino Ameaçado 2018", cover: "https://is3-ssl.mzstatic.com/image/thumb/Music115/v4/a5/43/4b/a5434bfb-6282-24c1-6d1e-1a3db95db0b3/01_JW2_ST_KA_DIGI_JCW_F01_042618.jpg/600x600bf-60.jpg", url: "https://drive.google.com/file/d/1RMdDWPg1lneQ4pExuZC-iiPKchUV73oK" },
+      { title: "Jurassic Park 3 2001", cover: "https://br.web.img3.acsta.net/c_300_300/medias/nmedia/18/91/05/56/20127551.jpg", url: "https://drive.google.com/file/d/1wLgQ2bObTD0d-5c_Id1pOWuZjxO1Z0Oe" },
+      { title: "Piratas do Caribe: A Maldição do Pérola Negra 2003", cover: "https://br.web.img3.acsta.net/c_300_300/medias/nmedia/18/35/07/46/affiche2.jpg", url: "https://drive.google.com/file/d/1qpGMn8Sx17pXskYG4KaVo1_XytwKZdtk" },
+      { title: "Piratas do Caribe: A Vingança de Salazar 2017", cover: "https://br.web.img3.acsta.net/c_300_300/pictures/17/02/06/16/45/284230.jpg", url: "https://drive.google.com/file/d/1w7e3oJ2CSTs5ql6vjjXMWEYNRpTgsRsI" },
+      { title: "Piratas do Caribe: No Fim do Mundo 2007", cover: "https://br.web.img2.acsta.net/c_300_300/medias/nmedia/18/69/52/47/20054901.jpg", url: "https://drive.google.com/file/d/1YH-1U80aScAjavV2HyXQt5becnqIWSBM" },
+      { title: "Piratas do Caribe navegando em aguas misteriosas 2011", cover: "https://i.scdn.co/image/ab67616d00001e0217aedf06791f27df5fc09add", url: "https://drive.google.com/file/d/1BM4QC4R3LGBc2zhW5QShJV6W9B33N8lX" },
+      { title: "Piratas do Caribe: O Baú da Morte 2006", cover: "https://i.ytimg.com/an/3P5_midRLR0/2501925968512736437_mq.jpg?v=62e13603", url: "https://drive.google.com/file/d/1B5cBpBs_EgjZ-Z9ejVKHAC1tgPDio-BA" },
+      { title: "O Hobbit: Uma Jornada Inesperada 2012", cover: "https://br.web.img3.acsta.net/c_300_300/medias/nmedia/18/93/43/35/20340755.jpg", url: "https://drive.google.com/file/d/1ZQRiWPPkP82pk3DI78k3m1MLvMdPjz3I" },
+      { title: "O Hobbit: A Desolação de Smaug 2013", cover: "https://br.web.img3.acsta.net/c_300_300/pictures/210/567/21056777_20131112081605649.jpg", url: "https://drive.google.com/file/d/1UOW7h-C2qeSor0ah1EthHqzN2lgan0MH" },
+      { title: "O Hobbit: A Batalha dos Cinco Exércitos 2014", cover: "https://br.web.img3.acsta.net/c_300_300/pictures/14/11/14/17/43/568445.jpg", url: "https://drive.google.com/file/d/1eKxs4OrQgr-gl4R_" }
+    ];
+
+    const TERROR_MOVIES = [
+      { title: "Bird Box Barcelona 2023", cover: "https://br.web.img2.acsta.net/c_300_300/pictures/23/06/26/21/14/0757969.jpg", url: "https://drive.google.com/file/d/1AWjDWe-Zdp26fozfZYdbUV6UYSuJ8nWx" },
+      { title: "Tin e Tina 2023", cover: "https://br.web.img3.acsta.net/c_300_300/pictures/23/02/07/14/48/1592183.jpg", url: "https://drive.google.com/file/d/1-PaCx_TaBMcACBJZk8C1cNy-umjXgJp5" },
+      { title: "Faces do Medo 2023", cover: "https://br.web.img3.acsta.net/c_300_300/pictures/22/03/03/08/49/0096166.jpg", url: "https://drive.google.com/file/d/1-IimEjhskpOj0WIFZmJz6CFQ42JMmtNr" },
+      { title: "maternidade do mal 2023", cover: "https://topdezfilmes.de/wp-content/uploads/2023/04/clock.jpg", url: "https://drive.google.com/file/d/1-xew7S1qvzhXNiIyNFlklieK0rAMF9Xg" },
+      { title: "O Exorcista do papa 2023", cover: "https://br.web.img3.acsta.net/c_300_300/pictures/23/02/22/15/50/3204928.jpg", url: "https://drive.google.com/file/d/1cFo8gcYn22WsVEPM8TekET_Ov0zfAKvp" },
+      { title: "A Morte do demonio 2023", cover: "https://i0.wp.com/cinemaeafins.com.br/wp-content/uploads/2023/04/morte-do-demonio-a-ascensao-2023-trilha-sonora.jpeg?ssl=1", url: "https://drive.google.com/file/d/1r8X52Py9iB4zoF-EaPDWSc5ZAc0dpdYm" },
+      { title: "Corrosao 2023", cover: "https://br.web.img2.acsta.net/c_300_300/pictures/23/03/28/21/51/0035458.jpg", url: "https://drive.google.com/file/d/1-VDVG-zcPw7x-f3SilN_IZW0cLTLYNYp" },
+      { title: "O Lobo Viking 2023", cover: "https://br.web.img2.acsta.net/c_300_300/pictures/23/01/10/19/54/2619118.png", url: "https://drive.google.com/file/d/11DLvZ2V0gmZoCiajwBTGOrwlX8Xx38R1" },
+      { title: "Pânico 6 2023", cover: "http://suntheatre.com.au/wp-content/uploads/2023/02/Scream-6-300x300.jpg", url: "https://drive.google.com/file/d/1IPrX9HJlfleVzfV9KTOn2krH3Jkj2k_K" },
+      { title: "Paciente 11 2023", cover: "https://br.web.img3.acsta.net/c_300_300/pictures/21/07/14/16/36/0127085.jpg", url: "https://drive.google.com/file/d/1T6W1NE0m3e874dx1W-kv7pO4xt32V1Qp" },
+      { title: "A Luz do Demônio 2022", cover: "https://br.web.img3.acsta.net/c_300_300/pictures/22/07/12/10/50/3023955.jpg", url: "https://drive.google.com/file/d/1X6tMYNuLBAVAIko22KHT5d0mCjO8ON1x" },
+      { title: "dracula 2022", cover: "https://br.web.img3.acsta.net/c_300_300/medias/nmedia/18/64/49/73/18857494.jpg", url: "https://drive.google.com/file/d/1-69xON6LRKDEqeNTqJjYKb0QVbazvyuq" },
+      { title: "huesera 2022", cover: "https://br.web.img3.acsta.net/c_300_300/pictures/23/01/09/21/12/5740638.jpg", url: "https://drive.google.com/file/d/1ymKYxswd1Yp9aOixAa3SkNOQIar2Nf5G" },
+      { title: "Sorria 2022", cover: "https://assets-prd.ignimgs.com/2022/08/17/smile-paramount-movie-button-1660756620060.jpg?width=300", url: "https://drive.google.com/file/d/1A2TgZXp3_lF00e1_M6jbSe3NmGhmGxrK" },
+      { title: "Entre as Sombras 2022", cover: "https://br.web.img3.acsta.net/c_300_300/medias/nmedia/18/94/58/32/20340388.jpg", url: "https://drive.google.com/file/d/1-9-f9QcBAUI2pKFtXM1CThXeoNjqmOR4" },
+      { title: "X - A Marca da Morte 2022", cover: "https://br.web.img3.acsta.net/c_300_300/pictures/22/02/04/16/59/2837359.jpg", url: "https://drive.google.com/file/d/12yQc8uz-Im8FtFlRV4P9qRCo591Rq-Lv" },
+      { title: "doutor sono 2020", cover: "https://br.web.img2.acsta.net/c_300_300/pictures/19/11/06/00/16/1581276.jpg", url: "https://drive.google.com/file/d/1O5GqWPFbqhlilgFIfk7QK20lr8dnEtWT" },
+      { title: "Hellraiser 2022", cover: "https://br.web.img3.acsta.net/c_300_300/pictures/22/09/01/20/11/4965463.png", url: "https://drive.google.com/file/d/1-0jexEa1GGd4c1e_j-DtXeuts64DzIyA" },
+      { title: "Pânico 5 2022", cover: "https://resizing.flixster.com/3aSXmIpiafoCDj3RYsQKu5vbx64=/300x300/v2/https://resizing.flixster.com/eDlWGFUB7GsB2iu1SsH6XIld3hY=/ems.cHJkLWVtcy1hc3NldHMvbW92aWVzLzhiYTQwNDgxLTA2NWEtNDY4Ni04MTk4LTc1YmE0YWEyZjUzOC5qcGc=", url: "https://drive.google.com/file/d/1zUnSEtWjlrg4rKS4_EpVOaSrizqnNoMI" },
+      { title: "sick 2022", cover: "https://br.web.img2.acsta.net/c_300_300/pictures/23/01/09/07/12/3911706.jpg", url: "https://drive.google.com/file/d/1-BmxIDg-bm4d_bvAn7WL9RR00hqxa_L2" },
+      { title: "pearl 2022", cover: "https://br.web.img3.acsta.net/c_300_300/pictures/22/07/25/20/34/1901466.jpg", url: "https://drive.google.com/file/d/1YnzVnCVrMKPV-popSOw7-RCpQKdz-IDF" },
+      { title: "O telefone Preto 2022", cover: "https://br.web.img3.acsta.net/c_300_300/pictures/22/06/23/21/10/1998178.jpg", url: "https://drive.google.com/file/d/15HwAxfGWxw4QkHxSQjmzToKLYHoHkcye" },
+      { title: "Primeira Comunhao 2022", cover: "https://br.web.img2.acsta.net/c_300_300/pictures/23/03/08/19/28/2969332.jpg", url: "https://drive.google.com/file/d/1-7JWNi3qX5QJBV8_Mv05oMq8yDCUWUia" },
+      { title: "O Menu 2022", cover: "https://br.web.img3.acsta.net/c_300_300/pictures/22/09/14/16/17/5342535.jpg", url: "https://drive.google.com/file/d/1nYRsskkhPL3jGhPfUN-8cZA1EpOiZlfx" },
+      { title: "Noites Brutais 2022", cover: "https://br.web.img3.acsta.net/c_300_300/pictures/22/08/17/19/21/4510979.jpg", url: "https://drive.google.com/file/d/10BNh2d9GurupUkdv7V1RvFrWhFvY4nGm" },
+      { title: "Oficina do Diabo 2022", cover: "https://resizing.flixster.com/_LLQUenzzv86_K4odzDvMUXAeS8=/300x300/v2/https://flxt.tmsimg.com/assets/p22618970_p_v8_aa.jpg", url: "https://drive.google.com/file/d/1-pmSPRr1fT-6OojitoVFHht1GCz7P2UJ" },
+      { title: "venus 2022", cover: "https://br.web.img3.acsta.net/c_300_300/pictures/22/08/18/16/20/0589643.jpg", url: "https://drive.google.com/file/d/1ugK4_3px3fFAiwbfodG8bct08SRRwkKD" },
+      { title: "13 exorcismo 2022", cover: "https://resizing.flixster.com/UbeihRSKfE6I65SWKx6jxGMeGoU=/300x300/v2/https://resizing.flixster.com/aqLi8FDysA-NK3fEkseW6BNh3d4=/ems.cHJkLWVtcy1hc3NldHMvbW92aWVzLzgxYjhkMjA5LTViOGItNDkyMi1iNDk5LWMwNmU4MDhhNTUwNi53ZWJw", url: "https://drive.google.com/file/d/1-2ptHgUOpKDl7E4rp5Y9jENvWppbsYTh" },
+      { title: "Desumano 2022", cover: "https://br.web.img2.acsta.net/c_300_300/pictures/22/05/09/22/07/2792882.jpg", url: "https://drive.google.com/file/d/1DhTs81CY-drTQUDj0K-sfSX7Uly1gVy2" },
+      { title: "Rua do Medo: 1994 - Parte I 2021", cover: "https://abre.ai/fzDH", url: "https://drive.google.com/file/d/1VcQnKCwDzGBv_FxIz2OAZpOY8dykHAWM" },
+      { title: "Rua do Medo: 1978- Parte II 2021", cover: "https://abre.ai/fzDK", url: "https://drive.google.com/file/d/1gZQKwSB7FAs_F7XqW-DHNPW4Rkrp32Eg" },
+      { title: "Rua do Medo: 1666 - Parte III 2021", cover: "https://abre.ai/fzDL", url: "https://drive.google.com/file/d/1XODyMRKBa2n1q2tqJmKwwbWl2jrshHmY" },
+      { title: "O Massacre da Serra Elétrica: O Retorno de Leatherface 2022", cover: "https://abre.ai/fDPr", url: "https://drive.google.com/file/d/1IgQ7OHAQewTP7LHfzL6omIsNKYHLgiq-" },
+      { title: "a maldiçao 2022", cover: "https://resizing.flixster.com/kRhaTDZuqae0Uxipc7MbzoBf4_E=/300x300/v2/https://resizing.flixster.com/oOc7KRGwDFuk1u64GBDkaUUXfKo=/ems.cHJkLWVtcy1hc3NldHMvbW92aWVzL2QwYWUwN2Y4LTZjZDEtNDZkMC1iMTM4LTgyNTdiOTM4Yzg1ZC5qcGc=", url: "https://drive.google.com/file/d/1-A0XfMoFZlVdXGJbjbvjnoU03LKE6iPQ" },
+      { title: "Orfa 2 A Origem 2022", cover: "https://br.web.img3.acsta.net/c_300_300/pictures/22/07/26/14/43/0768221.jpg", url: "https://drive.google.com/file/d/1eLaiI0tiOgktTntLYsCS-vL-odGZlQMf" },
+      { title: "Halloween Kills 2021", cover: "https://i.scdn.co/image/ab67616d00001e020b7926a39c53452bf8839c44", url: "https://drive.google.com/file/d/1aqzAl7WNOasLHc8M6Ha3wogPPAEcppaA" },
+      { title: "conspiraçao fatal 2022", cover: "https://br.web.img2.acsta.net/c_300_300/pictures/22/05/16/22/14/2782677.jpg", url: "https://drive.google.com/file/d/1q1hNdXEZHAl_xNdwEivfg4ItD3lS1mXh" },
+      { title: "Men Faces do Medo 2022", cover: "https://br.web.img3.acsta.net/c_300_300/pictures/22/03/23/10/19/1890162.jpg", url: "https://drive.google.com/file/d/1-EKMjTl5kDL0tzBd_yF1IPP54lk9G-yq" },
+      { title: "Corra Querida Corra 2022", cover: "https://br.web.img3.acsta.net/c_300_300/pictures/22/10/10/10/20/4407791.jpg", url: "https://drive.google.com/file/d/1-3_-TCIC8O6te-fh4REVzy0RP6k-vir_" },
+      { title: "Trancada 2022", cover: "https://abre.ai/fDZt", url: "https://drive.google.com/file/d/19Iur7IMttNpyDrijW66qYC61U-YTMW4X" },
+      { title: "Ghostbusters - Mais Além 2021", cover: "https://soundtracki.com/wp-content/uploads/2022/01/ghostbusters-afterlife-soundtrack-1.jpg", url: "https://drive.google.com/file/d/1E29wHeTiEuCK-c4KlHg5Vqyk-3QeI3dk" },
+      { title: "Invocação do Mal 3: A Ordem do Demônio 2021", cover: "https://abre.ai/fzDC", url: "https://drive.google.com/file/d/1VQmbmj6TRMg0p557hWJvHtWWbcaQAY6U" },
+      { title: "Invasao Zumbi 2 2020", cover: "https://cdn0-production-images-kly.akamaized.net/kF7xBBROHB1efkY4vYx82kuX9Tw=/1200x1200/smart/filters:quality(75):strip_icc():format(jpeg)/kly-media-production/medias/3616054/original/095864800_1635416847-Premium_Headline_-_Mobile.jpg", url: "https://drive.google.com/file/d/12JR9oa6wWMi8jZwb2q370PHy53O5muAC" },
+      { title: "Annabelle 3 2019", cover: "https://i.ytimg.com/an/vZO1Xkkaxww/12699406119447502342_mq.jpg?v=6112c6a4", url: "https://drive.google.com/file/d/1I1_ZFSNtMRfTOWnfD26xNGsV5vJgTtQX" },
+      { title: "Annabelle [2014]", cover: "https://i.discogs.com/WXJuXCU8K7VuLHFGiVcHkmnG-aKjavnDE0ibHjjgidY/rs:fit/g:sm/q:40/h:300/w:300/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTE2NDMw/MjI2LTE2MDc3MDI4/OTMtMzU4OS5qcGVn.jpeg", url: "https://drive.google.com/file/d/1vTq9BSDuFZyiO8QWLf2jMvnRJ0-E0Ijv" },
+      { title: "Annabelle 2: A Criação do Mal 2017", cover: "https://resizing.flixster.com/kTFoWitvQZ_L6qXTg1U9S93GFi4=/300x300/v2/https://flxt.tmsimg.com/assets/p12742365_p_v10_az.jpg", url: "https://drive.google.com/file/d/0B9B1Uw6Va33tNTFMX1gydHdzbzA" },
+      { title: "Heranca Maldita 2021", cover: "https://br.web.img3.acsta.net/c_300_300/pictures/20/11/18/09/12/0500284.jpg", url: "https://drive.google.com/file/d/1-HHKXxq7uBuRUdivKWiNofYhMXira3Wm" },
+      { title: "O Meme do Mal (2022)", cover: "https://resizing.flixster.com/WF747M8JDj-SuKNeu2RnEK07Qvg=/300x300/v2/https://resizing.flixster.com/T1s_pTvc1vHk7lXVeHNdVxP0gRk=/ems.cHJkLWVtcy1hc3NldHMvbW92aWVzL2E5OTIzYTg5LTAyZGYtNGZkYy1iNGNkLWRlZGMwZmNmOTg2NC5qcGc=", url: "https://drive.google.com/file/d/1S7EPAhLWp3fuUWdCPDRkxsGczz_I-o7j" },
+      { title: "Passageiro 666 2022", cover: "https://resizing.flixster.com/rXlk3h-y6HkWnzH1E6yWPkoKXBo=/300x300/v2/https://flxt.tmsimg.com/assets/p15547873_v_h9_aa.jpg", url: "https://drive.google.com/file/d/1-I2SfckvqiIERu8j5CvOl_sxcyQyEhL6" },
+      { title: "A Viúva das Sombras 2021", cover: "https://br.web.img2.acsta.net/c_300_300/pictures/21/02/25/16/21/1296819.jpg", url: "https://drive.google.com/file/d/15g9czYJwA-VdcN9s_5Q3kR5z6hP57LFC" },
+      { title: "O Telefone do Sr. Harrigan 2022", cover: "https://br.web.img3.acsta.net/c_300_300/pictures/22/09/28/08/51/0848185.jpg", url: "https://drive.google.com/file/d/1aNphSHwAXuSdrN4qcPRNk8DzzcsiH0rH" },
+      { title: "Boa Noite Mamae 2022", cover: "https://br.web.img3.acsta.net/c_300_300/pictures/22/08/24/16/31/4396896.jpg", url: "https://drive.google.com/file/d/1R9EZYKHqJYFOnnYtyb1v1YTTZwZ4dqAC" },
+      { title: "Titanic 666 2022", cover: "https://abre.ai/fENW", url: "https://drive.google.com/file/d/1-eI8OdxlY4kQGNGGsJr5Tl3Z6xH0SioG" },
+      { title: "Não! Não Olhe! 2022", cover: "https://br.web.img3.acsta.net/c_300_300/pictures/22/03/02/11/22/0244193.jpg", url: "https://drive.google.com/file/d/1BHjGxfTQ9AREApPDcqvbiXhBMuxKAwrO" },
+      { title: "Constantine - A Casa dos Mistérios 2022", cover: "https://abre.ai/fCUv", url: "https://drive.google.com/file/d/1kgHgezFw_QANFF40PlOhR_ANGyMqKSLA" },
+      { title: "Tempo 2021", cover: "https://abre.ai/fCsm", url: "https://drive.google.com/file/d/1iwGwpdh2hgtLB49ovXRY5ZwRj9jVNdeb" },
+      { title: "Morte Morte Morte 2022", cover: "https://br.web.img3.acsta.net/c_300_300/pictures/22/08/24/16/13/0736314.jpg", url: "https://drive.google.com/file/d/101PllJqqfVYZtEyD0OyQs1T784QVhXcN" },
+      { title: "A Mansão 2021", cover: "https://br.web.img3.acsta.net/c_300_300/pictures/21/09/15/09/06/0404756.jpg", url: "https://drive.google.com/file/d/1-UWhS0GT-VsdpeR9jCTnqc68snWUqEb1" },
+      { title: "Espíritos Obscuros 2021", cover: "https://abre.ai/fEOi", url: "https://drive.google.com/file/d/1-fnzyhkyu8groLRPRe90638UzpGENJby" },
+      { title: "Panico na Floresta- a fundaçao 2021", cover: "https://br.web.img2.acsta.net/c_300_300/pictures/20/12/21/10/03/5492848.jpg", url: "https://drive.google.com/file/d/1rWkUZZWVUc6VjRpfhTJv13Xmf3919bF8" },
+      { title: "Army of the Dead (2021)", cover: "https://br.web.img2.acsta.net/c_300_300/pictures/21/04/06/10/05/3052659.jpg", url: "https://drive.google.com/file/d/13RWNnxVnFJPUBQ06sY23kIiT2QJNhQKY" },
+      { title: "Mamãe 2021", cover: "https://abre.ai/fCp5", url: "https://drive.google.com/file/d/1bR6-rzw2Ua3gWH8XbcAiWHiGYUbYfmI5" },
+      { title: "Feitiço das Trevas 2021", cover: "https://br.web.img3.acsta.net/c_300_300/pictures/21/05/18/09/31/0274415.jpg", url: "https://drive.google.com/file/d/1-lVVv1SKYCuJVWnLPexE_v8ZmZJGpGMZ" },
+      { title: "A Casa Sombria 2021", cover: "https://br.web.img2.acsta.net/c_300_300/pictures/21/04/30/11/40/2703216.jpg", url: "https://drive.google.com/file/d/12uCT__3zHXT8dWs9mfrHL1598ncYe0uv" },
+      { title: "Crocodilos - A Morte Te Espera 2020", cover: "https://br.web.img3.acsta.net/c_300_300/pictures/21/09/14/19/19/1926439.jpg", url: "https://drive.google.com/file/d/1XiNv5UrdY1qggBo-EBSRCzsXBQa9OAM5" },
+      { title: "Guerra Mundial Z 2013", cover: "https://br.web.img3.acsta.net/c_300_300/medias/nmedia/18/91/21/46/20532444.jpg", url: "https://drive.google.com/file/d/11-k8dcKIeWxXUd2Anx42FU-VNP6U31p7" },
+      { title: "it capitulo dois 2019", cover: "https://abre.ai/fCyH", url: "https://drive.google.com/file/d/1N-5lUJIwj5qb6sX_5nhRHGoo73XSl9-k" },
+      { title: "It: A Coisa 2017", cover: "https://br.web.img3.acsta.net/c_300_300/img/0d/68/0d68945efa163a248ad94e7bf473c35f.jpg", url: "https://drive.google.com/file/d/1rknPQKOcMa9mtXBc_hWVTF2ekvlZaVBl" },
+      { title: "Ameaça Profunda 2017", cover: "https://abre.ai/fCs3", url: "https://drive.google.com/file/d/14MypC-wQ9h2ZhZ6RLkuq0hsKPC-DZVab" },
+      { title: "Vozes na Escuridão 2021", cover: "https://abre.ai/fEQE", url: "https://drive.google.com/file/d/1-WnwZUlnaLMXipq9YSnHuwQECm8Z1h9g" },
+      { title: "Histórias Assustadoras para Contar no Escuro 2019", cover: "https://br.web.img2.acsta.net/c_300_300/img/4c/ce/4ccee10a83d8fffe7e9bfb439105a1fe.jpg", url: "https://drive.google.com/file/d/1mYaQEqy3OaYjfzk1VGtWAxQ0z59UKiUi" },
+      { title: "fragmentado 2016", cover: "https://br.web.img3.acsta.net/c_300_300/pictures/16/12/09/09/51/046535.jpg", url: "https://drive.google.com/file/d/1D7BgnzyCPh1134o7n1gewABGNfjxcyUe" },
+      { title: "Willy’s Wonderland: Parque Maldito 2021", cover: "https://br.web.img3.acsta.net/c_300_300/pictures/21/01/18/10/02/3217868.jpg", url: "https://drive.google.com/file/d/1-RfQMW0yOvmITma3hVfiMUx4Y4RP_AvJ" },
+      { title: "Escolha ou Morra (2021)", cover: "https://br.web.img3.acsta.net/c_300_300/pictures/22/04/29/11/02/0489585.jpg", url: "https://drive.google.com/file/d/1-NbFuHM_lUMJ-LeBpHVDozwR2l4agYYD" },
+      { title: "Nunca Diga Seu Nome 2017", cover: "https://i.ytimg.com/vi/q3fHuF-aN-k/hqdefault.jpg", url: "https://drive.google.com/file/d/18n6hR7JG3iW-tfZJGebZ1Me9Pka7uRwj" },
+      { title: "Resident Evil Bem-Vindo a Raccoon City 2021", cover: "https://br.web.img3.acsta.net/c_300_300/pictures/21/10/07/17/41/1232414.jpg", url: "https://drive.google.com/file/d/1-aEYwbaRPcMR_JPb8mCbnD2avAWctDGI" },
+      { title: "Spree 2020", cover: "https://br.web.img3.acsta.net/c_300_300/pictures/20/08/03/20/13/4659683.jpg", url: "https://drive.google.com/file/d/1-FIxv9xx4hwiMRzxgtWsOyUHsIbbL-D6" },
+      { title: "Anjo das Trevas 2009", cover: "https://m.media-amazon.com/images/I/714lg-ZjwfL.jpg", url: "https://drive.google.com/file/d/1xRlgRuxTtK_WSgJ85O8xfgqqJMGVFW5h" },
+      { title: "Exorcismo Sagrado (2021)", cover: "https://br.web.img3.acsta.net/c_300_300/pictures/22/02/02/22/13/4021993.jpg", url: "https://drive.google.com/file/d/11sSfbMIYZAtiopikDLh8wZlzKzUjcqYJ" },
+      { title: "Rogai Por Nós [2021]", cover: "https://br.web.img3.acsta.net/c_300_300/pictures/21/03/11/21/37/5359097.jpg", url: "https://drive.google.com/file/d/1-Ng-Xfcu75FXVe-q7TAqxeAAx0JAVIP9" },
+      { title: "Jaula 2022", cover: "https://br.web.img3.acsta.net/c_300_300/pictures/22/09/28/14/28/0482035.jpg", url: "https://drive.google.com/file/d/1XYr7SYGrSXWXtlYxKEnTcKR9GWVpuPth" },
+      { title: "A Maldição 2022", cover: "https://br.web.img3.acsta.net/c_300_300/pictures/22/03/23/14/29/1384333.jpg", url: "https://drive.google.com/file/d/17RTVOyRZnQ4UIVqdr74pRpzDmSB5isF2" },
+      { title: "A Órfã 2009", cover: "https://br.web.img2.acsta.net/c_300_300/medias/nmedia/18/87/29/90/19874059.jpg", url: "https://drive.google.com/file/d/1CgWqYIYYQAVHRSFaI-JKMjuHv0g7f-mQ" },
+      { title: "Um estranho em nossa cama 2022", cover: "https://abre.ai/fD2z", url: "https://drive.google.com/file/d/1-ZkMipur0UWdn44vQnjz1ki-4galSim6" },
+      { title: "Maligno 2019", cover: "https://br.web.img3.acsta.net/c_300_300/pictures/18/10/18/19/31/3821555.jpg", url: "https://drive.google.com/file/d/1hy0O4glvrOH2gA9MaGE_NFh1IotrHLQU" },
+      { title: "Maria e João: O Conto das Bruxas", cover: "https://br.web.img3.acsta.net/c_300_300/pictures/19/09/18/21/17/3272792.jpg", url: "https://drive.google.com/file/d/1Yv0T3mT0yU4MchnPWdqT1k7Rl_AO_tAf" },
+      { title: "Os Órfãos 2020", cover: "https://br.web.img3.acsta.net/c_300_300/pictures/19/10/11/20/10/2823691.jpg", url: "https://drive.google.com/file/d/17uxe_qKeehBP-E0KMZVcGIHVCqA-AVfQ" },
+      { title: "Wyrmwood Apocalypse 2021", cover: "https://abre.ai/fEOS", url: "https://drive.google.com/file/d/1-dJ9PXWr88EdNKXQatBzYprJmSImXmH2" },
+      { title: "Lua Negra 2009", cover: "https://abre.ai/fCEJ", url: "https://drive.google.com/file/d/1g4KAcFxQhtuLVXmC41taTaqqXGvIDChf" },
+      { title: "Em Nome do Pai 2020", cover: "https://resizing.flixster.com/tqS5JUi8jdMDZb1okhlz2lPmIAM=/300x300/v2/https://flxt.tmsimg.com/assets/p18999272_v_h9_aa.jpg", url: "https://drive.google.com/file/d/10OkuxuwINs-pMUdBu2jFcdiPnO9shJJg" },
+      { title: "A Vila dos Suicídios 2020", cover: "https://abre.ai/fENh", url: "https://drive.google.com/file/d/1-31opQPlnwwvieVKK9Rdbzic26VQFKAc" },
+      { title: "A Casa de Cera 2005", cover: "https://br.web.img3.acsta.net/c_300_300/medias/nmedia/18/92/64/78/20210636.jpg", url: "https://drive.google.com/file/d/1Arxt9qq4IFdHHY0qCJ7sb6jbdeUgLnyD" },
+      { title: "A Hora da Sua Morte (2020)", cover: "https://br.web.img3.acsta.net/c_300_300/pictures/19/10/10/09/23/5441269.jpg", url: "https://drive.google.com/file/d/1ixmNCt0C4bzFGmLR23BjBGZS9BBHNhxZ" },
+      { title: "O Amigo Oculto [2005]", cover: "https://br.web.img3.acsta.net/c_300_300/medias/nmedia/18/93/46/82/20258621.jpg", url: "https://drive.google.com/file/d/1UiTTiZcuu6ZnpBmWKfcYIVYOD3zP8Z2H" },
+      { title: "club dos canibais 2018", cover: "https://br.web.img3.acsta.net/c_300_300/pictures/19/09/13/21/56/2234444.jpg", url: "https://drive.google.com/file/d/1KT6Lx5T8YM51BpEWokYRj2YGXGxUAUKt" },
+      { title: "Corra! [2017]", cover: "https://br.web.img3.acsta.net/c_300_300/pictures/17/04/19/21/08/577190.jpg", url: "https://drive.google.com/file/d/1uWRqxFS1V9MUzYDmL6fRQC06j2w34ksR" },
+      { title: "O Buraco 2009", cover: "https://br.web.img3.acsta.net/c_300_300/medias/nmedia/18/86/97/30/19870681.jpg", url: "https://drive.google.com/file/d/1mxmEGaDSwuJ2kK60vG_VWAosylcvMgd9" },
+      { title: "Brightburn - Filho das Trevas 2019", cover: "https://br.web.img2.acsta.net/c_300_300/pictures/19/04/05/20/57/4596868.jpg", url: "https://drive.google.com/file/d/10tW0wXSiQPzw5Cqi9gX9sgKRSAahd9Xj" },
+      { title: "Melanie - A Última Esperança 2016", cover: "https://br.web.img2.acsta.net/c_300_300/pictures/15/03/25/21/13/031475.jpg", url: "https://drive.google.com/file/d/1fnt8Z0hgLqCAE9CgxduxpATNruIRjtZe" },
+      { title: "RAZE: CORRER OU MORRER 2017", cover: "https://br.web.img3.acsta.net/c_300_300/pictures/14/09/18/14/58/418353.jpg", url: "https://drive.google.com/file/d/11BUbNJygZ1cZmuFDeI4wyS2skAzbkP2X" },
+      { title: "Noite Passada em Soho 2021", cover: "https://br.web.img2.acsta.net/c_300_300/pictures/21/09/17/10/42/2725666.jpg", url: "https://drive.google.com/file/d/12U5HPoHExml-HUpdV1dtYski8rz43VIK" },
+      { title: "Brinquedo Assasino 2019", cover: "https://br.web.img2.acsta.net/c_300_300/img/17/89/178934f65572db84b8e9f32420c478a9.jpg", url: "https://drive.google.com/file/d/1YOnuLOwYM3LDOkMdbD1SP2bOPMO7Dwxw" },
+      { title: "O Culto de Chucky 2017", cover: "https://br.web.img3.acsta.net/c_300_300/pictures/17/10/20/20/01/0738714.jpg", url: "https://drive.google.com/file/d/1arMVkT2dvSWusjSYV_-4KM_hPnjZBxMa" },
+      { title: "O Filho de Chucky 2004", cover: "https://abre.ai/fDLh", url: "https://drive.google.com/file/d/1pxn9tOeTtRth_bg4FvfpAD0Wg-AgvBr5" },
+      { title: "A Noiva de Chucky (1998)", cover: "https://br.web.img3.acsta.net/c_300_300/medias/nmedia/18/87/11/45/19872155.jpg", url: "https://drive.google.com/file/d/1CYV1XG0rlMCuW1R0PgGAt8L8jA8DFdE4" }
+    ];
+
+    const BASE_MOVIES = [
+      { title: "Disney+ Day O Especial da Marvel Studios 2022", cover: "", url: "https://drive.google.com/file/d/1-5hkKd-4GV4_VpelfvmNUvqQrW_lEc0J" },
+      { title: "Guardioes das galaxias 3 2023", cover: "", url: "https://drive.google.com/file/d/1KayZHyC6JIFjtl7oZ-GQFX1FCBr_DdBh" },
+      { title: "The Flash 2023", cover: "", url: "https://drive.google.com/file/d/1nLTYSjEELsKu_EpcaB5rHdzRq8_R8s0k" },
+      { title: "Homem-formiga QUANTUMANIA 2023", cover: "", url: "https://drive.google.com/file/d/1DgyFSfM_sUgqkg95DX__Glin1N3BVMry" },
+      { title: "Shazam 2 2023", cover: "", url: "https://drive.google.com/file/d/1Smzbl1Rg3kgqVvjGywkeCQHQ_gxdjAd5" },
+      { title: "Pantera Negra: Wakanda Forever 2022", cover: "", url: "https://drive.google.com/file/d/1CU-HoZDeCXCYI-gnHDcwOlkmLSPc7vaY" },
+      { title: "Guardiões da Galáxia: Especial de Natal 2022", cover: "", url: "https://drive.google.com/file/d/11iSkm6JF7TUxe8q4atVUxw2UtVZD_Dpt" },
+      { title: "Adão Negro 2022", cover: "", url: "https://drive.google.com/file/d/1czdDCnjqFjFQAlAhUrb0ZThrOziLvuqd" },
+      { title: "Thor Amor e Trovão 2022", cover: "", url: "https://drive.google.com/file/d/17tAlHErAgP1PQhBXZCIYhuSmbl-nBB-j" },
+      { title: "Doutor Estranho no Multiverso da Loucura 2022", cover: "", url: "https://drive.google.com/file/d/1Rx8KMLVIH8YiGJv2DKdIkbjIIOo90xmB" },
+      { title: "Lobisomem na Noite 2022", cover: "", url: "https://drive.google.com/file/d/1-y15E7gf8ctX5aDc0obTibBw21bwzViX" },
+      { title: "The Batman 2022", cover: "", url: "https://drive.google.com/file/d/1RRtB6HbaoZz9qyPJUzb_7SBN20pfdqpj" },
+      { title: "Morbius 2022", cover: "", url: "https://drive.google.com/file/d/1qN0Ii-YFS3swAAsLstG2cJMWDyuX3yOL" },
+      { title: "Homem-Aranha: Sem Volta para Casa 2021", cover: "", url: "https://drive.google.com/file/d/1whmL2SC6rDvCGIO8Nc8hzuMUYG1Yf5qC" },
+      { title: "Venom 2: Tempo de Carnificina 2021", cover: "", url: "https://drive.google.com/file/d/1uNSMDcSV1Lf0RkghysDBc3o2S-A0usaN" },
+      { title: "O Esquadrão Suicida 2021", cover: "", url: "https://drive.google.com/file/d/1WS5jEnX2D6dpHF_vTGBWwcqwWtwe6FsQ" },
+      { title: "Super Murali 2021", cover: "", url: "https://drive.google.com/file/d/1wsrpkzuEtmIUdvnf-tzp-RL-2-_7pIhm" },
+      { title: "Viúva Negra 2021", cover: "", url: "https://drive.google.com/file/d/1aMm3IUsZBhk0I7aWpN9m_aGP-7JTNHIJ" },
+      { title: "Liga da Justiça de Zack Snyder: A Justiça é Cinza 2021", cover: "", url: "https://drive.google.com/file/d/1iS0NQ8Pn2oT-nkcrzsXTmCqGRugYDPiF" },
+      { title: "Homem-Aranha no Aranhaverso 2018", cover: "", url: "https://drive.google.com/file/d/1IxUxt_CnCQwOoq5akjtw-abscHmjyj_x" },
+      { title: "Esquadrão Suicida 2016", cover: "", url: "https://drive.google.com/file/d/1RhLG8T1FOTROSBGXzVUeq9PnnsioBMCz" },
+      { title: "Homem-Aranha: Longe de Casa 2019", cover: "", url: "https://drive.google.com/file/d/1W2r4WnajcJR3Vwbz1q2yzwmCgt3WANlu" },
+      { title: "Shang-Chi e a Lenda dos Dez Anéis 2021", cover: "", url: "https://drive.google.com/file/d/1gLW6wZB-ChxJEBLnzWRzbfD8RiYxLMYL" },
+      { title: "X-Men: Fênix Negra 2019", cover: "", url: "https://drive.google.com/file/d/1wuSFHbr-bjLbcMcErhr_t6DFywgzqAtJ" },
+      { title: "As Tartarugas Ninjas 2 2018", cover: "", url: "https://drive.google.com/file/d/1vTMbBH0Rjvv8-dSyx1tUqjcgsdXAFUMA" },
+      { title: "Eternos 2021", cover: "", url: "https://drive.google.com/file/d/1-6srjC0CmeBHZ8R1t-P1eG5b7DIBH8Vy" },
+      { title: "Coringa 2019", cover: "", url: "https://drive.google.com/file/d/1YKz7djN6z9pbC7b1Ia23-1sLXucUF_BT" },
+      { title: "venom 2018", cover: "", url: "https://drive.google.com/file/d/154TQBc13FrA6nAkgMbixbVNbQwR_LFtc" },
+      { title: "Homem-Formiga 2015", cover: "", url: "https://drive.google.com/file/d/1TIdX-DtN7Hal01WJA15_IavEs2pBy2oc" },
+      { title: "As Tartarugas Ninjas 2014", cover: "", url: "https://drive.google.com/file/d/1gtZWEnVrwEBdc0MHOioALsDmQq-ocZ0S" },
+      { title: "Era Uma Vez Deadpool 2019", cover: "", url: "https://drive.google.com/file/d/1vOMgejkrBxWcEs5Osqr4lly7oFPDkqP8" },
+      { title: "Guardiões da Galáxia Vol.2 2017", cover: "", url: "https://drive.google.com/file/d/1cRRbvf6SMEGoHQvnlvdVov8wO84b__X7" },
+      { title: "Guardiões da Galáxia 2014", cover: "", url: "https://drive.google.com/file/d/1PIayXxW07GxdXYNXJNvpTpFar-t9HAvV" },
+      { title: "Thor: O Mundo Sombrio 2013", cover: "", url: "https://drive.google.com/file/d/1_kwGbLO-DaYLvts0fc0fPefRfbXX8mIZ" },
+      { title: "Capitão América II: O Soldado Invernal 2014", cover: "", url: "https://drive.google.com/file/d/1CUX36xjsHevrTLyAjNS4Y_MU1-PSO_aI" },
+      { title: "Logan 2017", cover: "", url: "https://drive.google.com/file/d/1qcQyWO3BiVHE2Oi42OHgbYLGYIRIZlMa" },
+      { title: "Quarteto Fantatisco 2015", cover: "", url: "https://drive.google.com/file/d/1cySTb0qx9jIz7Yhlm8HIEdN6fjOZKjlD" },
+      { title: "Deadpool 2 2018", cover: "", url: "https://drive.google.com/file/d/1hTyaTR2DorIycMBAsnvvV79rbNjaQn1M" },
+      { title: "Mulher-Maravilha 2017", cover: "", url: "https://drive.google.com/file/d/1C82punCqifhTc7UKVMk1-kWGH-sbVYgH" },
+      { title: "Deadpool 2016", cover: "", url: "https://drive.google.com/file/d/1v_KOQGd3iBYkXPZJH4beGLZwsptscJAM" },
+      { title: "O Espetacular Homem-Aranha 2012", cover: "", url: "https://drive.google.com/file/d/1_tHMqz_6WNNRPflZZ6o3kOVEzCPhmRfi" },
+      { title: "O Espetacular Homem-Aranha 2 A Ameaça de Electro 2014", cover: "", url: "https://drive.google.com/file/d/18I08pkUE3Nw5OV9pEst7j4tuFQs5NRu6" },
+      { title: "Homem-Aranha [2002]", cover: "", url: "https://drive.google.com/file/d/1-Zo7y8-UYBllwdME-SnbEVprAfGoK3y5" },
+      { title: "Homem-Aranha 3 2007", cover: "", url: "https://drive.google.com/file/d/1BStPBch1Ogw_DQjHGQWK4dTCMO3zg6vN" },
+      { title: "Homem-Aranha 2 2004", cover: "", url: "https://drive.google.com/file/d/1-Zo7y8-UYBllwdME-SnbEVprAfGoK3y5" },
+      { title: "Homem-Aranha: De Volta ao Lar", cover: "", url: "https://drive.google.com/file/d/0B_j4d8dgZNLdVC02WXpySlgtd2s" },
+      { title: "Homem de Ferro 2 2010", cover: "", url: "https://drive.google.com/file/d/1NESARf5orL9bHF8j-fSMyAXhFsTmCsNG" },
+      { title: "Batman Begins 2005", cover: "", url: "https://drive.google.com/file/d/1PwM86Mq1BgY4ZBMyqk-XAaNghmTrexDS" },
+      { title: "Batman: O Cavaleiro das Trevas Ressurge 2012", cover: "", url: "https://drive.google.com/file/d/1otSqntDzOZKsfygR-biDrUv8IOFI9hhu" },
+      { title: "Batman: O Cavaleiro das Trevas 2008", cover: "", url: "https://drive.google.com/file/d/1zi5sOIZ4RzuCvrs-nVYIiI8G513e0byf" },
+      { title: "Batman Eternamente 1997", cover: "", url: "https://drive.google.com/file/d/1IE_-8z10EDmj6IODICvpVU_JazM9I8XD" },
+      { title: "Batman O Retorno 2017", cover: "", url: "https://drive.google.com/file/d/1U7T3QHm60dOkFH535fTYZr2_9IzG1Cr0" },
+      { title: "Batman O Inicio 1996", cover: "", url: "https://drive.google.com/file/d/1DAHHzPHa0hr7XozNb0Gx93UYQeY3LahH" },
+      { title: "Blade Trinity 2004", cover: "", url: "https://drive.google.com/file/d/1hFvKefqX7HEBCI0dFnmzy5hwEZ2UuGbB" },
+      { title: "Blade 2 2002", cover: "", url: "https://drive.google.com/file/d/11Aro2UUaaBKoSfk1LTjPS13Xa4fY81mF" },
+      { title: "Blade - O Caçador de Vampiros 1998", cover: "", url: "https://drive.google.com/file/d/1SKiNkcbDsGmkOcoP7eEMHPOw8MvlkvGA" },
+      { title: "as tartarugas ninja 1990", cover: "", url: "https://drive.google.com/file/d/1-1EGP54EwtN2mOIT8WeMULoq-747kZK2" },
+      { title: "Superman - O Retorno 2006", cover: "", url: "https://drive.google.com/file/d/19pifkD73eEXHNVIjLxJXz-Xc6fTrxqLO" },
+      { title: "Batman Vs Superman - A Origem da Justiça 2016", cover: "", url: "https://drive.google.com/file/d/18RUVvmN1sKnLYzYIFcKGQuN3ECEAZlDQ" },
+      { title: "Quarteto Fantástico e o Surfista Prateado 2007", cover: "", url: "https://drive.google.com/file/d/1qMYpcrxUjwoqL3RG1AneIev9-ttWFOQq" },
+      { title: "Lanterna Verde 2011", cover: "", url: "https://drive.google.com/file/d/1hzZNZDP682SvjBMgwPRS7mfxp7n3JcxA" },
+      { title: "O Homem de aço 2013", cover: "", url: "https://drive.google.com/file/d/19rbJqyUD2loO1UKkIPcJlQ8nChXGwYsJ" },
+      { title: "Thor: Ragnarok 2017", cover: "", url: "https://drive.google.com/file/d/1rLgotI926KQiVjMs5DEXOffDnHoqvBaV" },
+      { title: "Vingadores: Era de Ultron 2015", cover: "", url: "https://drive.google.com/file/d/1kP93UrE46X-AZvWBkBmutopudmKPJ7JY" },
+      { title: "Capitã Marvel 2019", cover: "", url: "https://drive.google.com/file/d/1Zi4GcLlnPwlnWiOmtL1HkDi2czK9uEhj" },
+      { title: "Homem de Ferro 3 2013", cover: "", url: "https://drive.google.com/file/d/1F6CTOYdqIjAM7KkVwxJpm7ljWLTU3H3m" },
+      { title: "Mulher-Maravilha 1984 -  2020", cover: "", url: "https://drive.google.com/file/d/1-V5f7P--FbT-2KI9ZdkAh9WG9kOBWceW" },
+      { title: "Demolidor 2015", cover: "", url: "https://drive.google.com/file/d/1SAbBt_EpoojCgBECaZODZ5ODl3EZEhn4" },
+      { title: "Aquaman 2018", cover: "", url: "https://drive.google.com/file/d/1Bqj8Ea6WAmSkJIJDs52sfWTkqReIda-C" },
+      { title: "Vingadores: Ultimato 2019", cover: "", url: "https://drive.google.com/file/d/1Cl4m64cDx-2xTn1lGqjzA9ipWoBPvP2j" },
+      { title: "Vingadores: Guerra Infinita 2018", cover: "", url: "https://drive.google.com/file/d/1ORacaEBHGJ4t0ppl0BGpYLMU7SoKhtID" },
+      { title: "X-men apocalipse 2017", cover: "", url: "https://drive.google.com/file/d/1oElkId2yVOSkj7JN_pn2CJJ8tH68DkKJ" },
+      { title: "x-Men origem wolverine 2009", cover: "", url: "https://drive.google.com/file/d/1EEnKUuZPFuROjemLZjlMqqmJmlp1qs37" },
+      { title: "X-Men O Filme 2000", cover: "", url: "https://drive.google.com/file/d/1sqiI1QRr_2202OdZwjxw0036Lo-4IcOp" },
+      { title: "X-Men 2 2003", cover: "", url: "https://drive.google.com/file/d/1VtRZSZ6Ie1ylkMwv387IADnsiYUtNPYO" },
+      { title: "X-Men confroto final 2006", cover: "", url: "https://drive.google.com/file/d/1e14DK6qi4nkXQt2aRCWRR_CYLOx0B7vS" },
+      { title: "X-Men Dias de um Futuro Esquecido 2014", cover: "", url: "https://drive.google.com/file/d/1l6IH7omqUNy3Dp4XhWTh7IvSYr184wWz" },
+      { title: "x-men primeira classe 2011", cover: "", url: "https://drive.google.com/file/d/1YAKIq-xDLAea0suqgVtdbX9lWBZpGpAF" },
+      { title: "wolverine imortal 2013", cover: "", url: "https://drive.google.com/file/d/1kp89lb8UZXtHpOXLbYqrgVbD5giZ_klm" },
+      { title: "thor 2011", cover: "", url: "https://drive.google.com/file/d/18OqvbKipqtTGzcG0mnKOoyk8YYK90bBX" },
+      { title: "Pantera Negra (2018)", cover: "", url: "https://drive.google.com/file/d/1zLNuGjNgzt-THs_n-Sy9TumnaNblrox-" },
+      { title: "Os Novos Mutantes 2020", cover: "", url: "https://drive.google.com/file/d/1iu4CYl1TF57Z9MKzsgF-qEWV9VJvvnSD" },
+      { title: "Os Vingadores – 2012", cover: "", url: "https://drive.google.com/file/d/1YPXsXBYsO9iAFjmVmK_rxdG0319cBM2-" },
+      { title: "Hellboy 2004", cover: "", url: "https://drive.google.com/file/d/11qGVaX2D9dTfNHe6HZKcxvB3Z3RqBfKe" },
+      { title: "Hellboy 2 O Exército Dourado 2008", cover: "", url: "https://drive.google.com/file/d/125FoE2TgbRVE5Ec3ca8XqZhs1OoyQIJP" },
+      { title: "Hellboy  2019", cover: "", url: "https://drive.google.com/file/d/1-urDvT408KaLApergQQnwNNCVP1QGFod" },
+      { title: "Motoqueiro Fantasma 2 2012", cover: "", url: "https://drive.google.com/file/d/1bHXWg7OI_EawmwfLnmtthjy8nvVO4s6y" },
+      { title: "Motoqueiro Fantasma 2005", cover: "", url: "https://drive.google.com/file/d/1jqoVj3-y7BwY_VpP3w-nemA3xP0FJM9P" },
+      { title: "Spawn - O Soldado do Inferno 1997", cover: "", url: "https://drive.google.com/file/d/11Zj5IzBE2oSWeG0xQs22J5hYMwacLCU5" },
+      { title: "Superman 2 (1980)", cover: "", url: "https://drive.google.com/file/d/16ntDPP7fgqIj8o4BQZv0wDm7wFFWADiW" },
+      { title: "Mulher Gato (2004)", cover: "", url: "https://drive.google.com/file/d/147Ei3W9hd8uPp9M4B4W4bACpeaBrhlpU" },
+      { title: "CONSTANTINE 2005", cover: "", url: "https://drive.google.com/file/d/1_embidkXifjuep79fdrPfZWBgEBGMQcK" },
+      { title: "hulk 2007", cover: "", url: "https://drive.google.com/file/d/12aZXfw1uakgEOrDpCzghP_w14EWeMEc_" },
+      { title: "Watchmen (2009)", cover: "", url: "https://drive.google.com/file/d/1FevJEGkP84E--S3X-RoO_eSSKd1kU9ZO" },
+      { title: "capitao america civil war 2016", cover: "", url: "https://drive.google.com/file/d/1maQ2xn7Fyjvs3Z-V2mCRdAuvEbs8Nhmz" },
+      { title: "capitao america primeiro vingador 2011", cover: "", url: "https://drive.google.com/file/d/1NDqiT_fkrt5AM5-cX9kaKeBPee6I7YVp" },
+      { title: "o justiceiro 2010", cover: "", url: "https://drive.google.com/file/d/1cOsTXxOuyM4tePMkRcp0NpieHD1--Ds3" },
+      { title: "Quarteto Fantastico 2006", cover: "", url: "https://drive.google.com/file/d/11ovOQCLCdYh1xQoGHm_Gp2-S29sqDsZ6" },
+      { title: "Elektra 2008", cover: "", url: "https://drive.google.com/file/d/1JPzgFXZQBmC6i9uDb_fII0oMchan_ZEy" },
+      { title: "Homem De Ferro 2009", cover: "", url: "https://drive.google.com/file/d/1NsMUfjcmEPKm0x7R1Oojm5Mt-7Yx4sP7" },
+      { title: "Kick Ass 2 2014", cover: "", url: "https://drive.google.com/file/d/1xsmu0ZCN9Qz0kyTldghIusz2PMfLU6a3" },
+      { title: "Kick Ass quebrando tudo 2011", cover: "", url: "https://drive.google.com/file/d/18X-DIXqDqQ6cyhj2exJgm6mMi0PgKspq" }
+    ];
+
+    const MOVIES = [...FANTASIA_MOVIES, ...TERROR_MOVIES, ...BASE_MOVIES];
+
+    const PAGE_SIZE = 10;
+    const TMDB_KEY = "8265bd1679663a7ea12ac168da84d2e8";
+    const posterCache = JSON.parse(localStorage.getItem("tmdb_posters_v1") || "{}");
+
+    const searchBoxEl = document.getElementById("searchBox");
+    const qInput = document.getElementById("q");
+    const tabsEl = document.getElementById("tabs");
+    const listEl = document.getElementById("list");
+    const countEl = document.getElementById("count");
+    const btnChannels = document.getElementById("btnChannels");
+    const btnMovies = document.getElementById("btnMovies");
+
     const playerOverlay = document.getElementById("playerOverlay");
-    const playerFrame = document.getElementById("playerFrame");
-    const backBtn = document.getElementById("backBtn");
+    const playerTitle = document.getElementById("playerTitle");
+    const playerFrameWrap = document.getElementById("playerFrameWrap");
+    const btnToggleFs = document.getElementById("btnToggleFs");
+    const btnClosePlayer = document.getElementById("btnClosePlayer");
 
-    let currentTab = "tv";
-    let currentPage = 0;
+    let currentMode = "channels";
+    let activeTab = 0;
     let focusZone = "grid";
-    let focusedTopIndex = 0;
-    let focusedSlot = 0;
-    let lastPlayedSlot = 0;
-    let lastPressTime = 0;
-    let isOpening = false;
+    let focusedModeIdx = 0;
+    let focusedTabIdx = 0;
+    let focusedCardIdx = 0;
+    let isPlayerOpen = false;
+    let hudTimer = null;
 
-    function extractYouTubeWatchUrl(rawUrl) {
-      if (!rawUrl) return "";
-      const trimmed = rawUrl.trim();
-      const match = trimmed.match(/src=["']([^"']+)["']/i);
-      const extracted = match ? match[1] : trimmed;
-
+    async function enterFullscreen(targetEl = document.documentElement) {
+      if (document.fullscreenElement) return;
       try {
-        const parsed = new URL(extracted);
-        if (parsed.hostname.includes("youtube.com")) {
-          const parts = parsed.pathname.split("/").filter(Boolean);
-          const embedIdx = parts.indexOf("embed");
-          if (embedIdx !== -1 && parts[embedIdx + 1]) {
-            return `https://www.youtube.com/watch?v=${parts[embedIdx + 1]}`;
-          }
-          const shortsIdx = parts.indexOf("shorts");
-          if (shortsIdx !== -1 && parts[shortsIdx + 1]) {
-            return `https://www.youtube.com/watch?v=${parts[shortsIdx + 1]}`;
-          }
-          const vParam = parsed.searchParams.get("v");
-          if (vParam) {
-            return `https://www.youtube.com/watch?v=${vParam}`;
-          }
-        }
-        if (parsed.hostname === "youtu.be") {
-          const vid = parsed.pathname.replace(/^\/+/, "");
-          if (vid) {
-            return `https://www.youtube.com/watch?v=${vid}`;
-          }
+        if (targetEl && targetEl.requestFullscreen) {
+          await targetEl.requestFullscreen();
+        } else if (document.documentElement.requestFullscreen) {
+          await document.documentElement.requestFullscreen();
         }
       } catch (_) {}
-      return "";
     }
 
-    function normalizePlayerUrl(rawUrl) {
-      if (!rawUrl) return "";
-      const trimmed = rawUrl.trim();
-      const match = trimmed.match(/src=["']([^"']+)["']/i);
-      const extracted = match ? match[1] : trimmed;
-
+    async function exitFullscreen() {
+      if (!document.fullscreenElement) return;
       try {
-        const parsed = new URL(extracted);
-        if (parsed.hostname === "youtu.be") {
-          const videoId = parsed.pathname.replace(/^\/+/, "");
-          if (videoId) {
-            return `https://www.youtube.com/embed/${videoId}`;
-          }
+        if (document.exitFullscreen) {
+          await document.exitFullscreen();
         }
       } catch (_) {}
-
-      return extracted;
     }
 
-    function getItems() {
-      return CATALOG[currentTab] || [];
+    function showHudTemporary() {
+      playerOverlay.classList.add("hud-visible");
+      clearTimeout(hudTimer);
+      hudTimer = setTimeout(() => {
+        if (isPlayerOpen) playerOverlay.classList.remove("hud-visible");
+      }, 3000);
     }
 
-    function getPageSlice(pageIndex) {
-      const items = getItems();
-      const start = pageIndex * PAGE_SIZE;
-      return items.slice(start, start + PAGE_SIZE);
-    }
-
-    function getTopElements() {
-      return [tabTv, tabMovies, ...numBtns];
-    }
-
-    function updateTabsUI() {
-      tabTv.classList.toggle("active", currentTab === "tv");
-      tabMovies.classList.toggle("active", currentTab === "movies");
-      numBtns.forEach((btn, idx) => {
-        btn.classList.toggle("active", idx === currentPage);
-      });
-    }
-
-    function findNearestFilledSlot(cards, desiredSlot) {
-      if (cards[desiredSlot] && !cards[desiredSlot].classList.contains("empty-slot")) {
-        return desiredSlot;
+    function normalizeMediaUrl(rawUrl) {
+      if (!rawUrl) return CHANNEL_EMBED_URL;
+      const driveMatch = rawUrl.match(/drive\.google\.com\/file\/d\/([^/]+)/);
+      if (driveMatch) {
+        return `https://drive.google.com/file/d/${driveMatch[1]}/preview`;
       }
-      for (let i = desiredSlot; i >= 0; i--) {
-        if (cards[i] && !cards[i].classList.contains("empty-slot")) {
-          return i;
-        }
+      if (rawUrl.includes("sinalpublicoetv.vercel.app") && !rawUrl.includes("autoplay=")) {
+        return rawUrl + (rawUrl.includes("?") ? "&autoplay=1" : "?autoplay=1");
       }
-      for (let i = desiredSlot + 1; i < cards.length; i++) {
-        if (cards[i] && !cards[i].classList.contains("empty-slot")) {
-          return i;
-        }
-      }
-      return -1;
+      return rawUrl;
     }
 
-    function updateFocusVisuals() {
-      document.querySelectorAll(".tv-focused").forEach(el => el.classList.remove("tv-focused"));
+    async function openMediaPlayer(item) {
+      const embedUrl = normalizeMediaUrl(item.url);
+      playerTitle.textContent = item.title;
+      playerFrameWrap.innerHTML = "";
 
-      if (focusZone === "tabs") {
-        const topEls = getTopElements();
-        focusedTopIndex = Math.max(0, Math.min(focusedTopIndex, topEls.length - 1));
-        const btn = topEls[focusedTopIndex];
-        if (btn) {
-          btn.classList.add("tv-focused");
-          btn.focus({ preventScroll: true });
-        }
-      } else if (focusZone === "grid") {
-        const cards = Array.from(grid9.children);
-        if (cards.length > 0) {
-          const clamped = Math.max(0, Math.min(focusedSlot, cards.length - 1));
-          const resolvedIndex = findNearestFilledSlot(cards, clamped);
-          if (resolvedIndex !== -1) {
-            focusedSlot = resolvedIndex;
-            const target = cards[resolvedIndex];
-            target.classList.add("tv-focused");
-            target.focus({ preventScroll: true });
-          }
-        }
-      } else if (focusZone === "player") {
-        backBtn.classList.add("tv-focused");
-        backBtn.focus({ preventScroll: true });
-      }
-    }
+      const iframe = document.createElement("iframe");
+      iframe.src = embedUrl;
+      iframe.width = "100%";
+      iframe.height = "100%";
+      iframe.frameBorder = "0";
+      iframe.allow = "autoplay; encrypted-media; fullscreen; picture-in-picture";
+      iframe.allowFullscreen = true;
+      playerFrameWrap.appendChild(iframe);
 
-    function renderPage(preferredSlot = 0) {
-      const maxPageIndex = NUM_TABS_COUNT - 1;
-      if (currentPage > maxPageIndex) currentPage = maxPageIndex;
-      if (currentPage < 0) currentPage = 0;
-
-      updateTabsUI();
-
-      const slice = getPageSlice(currentPage);
-      grid9.innerHTML = "";
-
-      for (let slot = 0; slot < PAGE_SIZE; slot++) {
-        const item = slice[slot];
-        const card = document.createElement(item ? "button" : "div");
-        card.dataset.slot = slot;
-
-        if (item) {
-          card.type = "button";
-          card.className = "card";
-          card.tabIndex = 0;
-          card.setAttribute("role", "button");
-          card.setAttribute("aria-label", item.title);
-
-          const img = document.createElement("img");
-          img.src = item.cover;
-          img.alt = item.title;
-          img.loading = "eager";
-          img.onerror = function () {
-            this.src = "https://images.unsplash.com/photo-1574375927938-d5a98e8ffe85?auto=format&fit=crop&w=800&q=80";
-          };
-
-          const info = document.createElement("div");
-          info.className = "card-info";
-
-          const title = document.createElement("div");
-          title.className = "card-title";
-          title.textContent = item.title;
-
-          const badge = document.createElement("span");
-          badge.className = "card-badge";
-          badge.textContent = currentTab === "tv" ? "TV" : "FILME";
-
-          info.appendChild(title);
-          info.appendChild(badge);
-          card.appendChild(img);
-          card.appendChild(info);
-
-          card.addEventListener("click", (ev) => {
-            ev.preventDefault();
-            ev.stopPropagation();
-            const now = Date.now();
-            if (isOpening || now - lastPressTime < 400) return;
-            lastPressTime = now;
-            focusedSlot = slot;
-            lastPlayedSlot = slot;
-            openPlayer(item.url);
-          });
-        } else {
-          card.className = "card empty-slot";
-          card.tabIndex = -1;
-          const label = document.createElement("span");
-          label.textContent = "Vazio";
-          card.appendChild(label);
-        }
-
-        grid9.appendChild(card);
-      }
-
-      focusedSlot = Math.max(0, Math.min(preferredSlot, PAGE_SIZE - 1));
-      if (focusZone === "grid") {
-        updateFocusVisuals();
-      }
-    }
-
-    function switchTab(tabName) {
-      currentTab = tabName;
-      focusedTopIndex = tabName === "tv" ? 0 : 1;
-      currentPage = 0;
-      focusZone = "grid";
-      renderPage(0);
-    }
-
-    function selectNumberTab(pageIdx) {
-      currentPage = Math.max(0, Math.min(pageIdx, NUM_TABS_COUNT - 1));
-      focusedTopIndex = 2 + currentPage;
-      focusZone = "grid";
-      renderPage(0);
-    }
-
-    function openPlayer(url) {
-      if (isOpening) return;
-      isOpening = true;
-
-      const ytWatchUrl = extractYouTubeWatchUrl(url);
-      if (ytWatchUrl) {
-        window.location.href = ytWatchUrl;
-        setTimeout(() => { isOpening = false; }, 1000);
-        return;
-      }
-
-      const targetUrl = normalizePlayerUrl(url);
-      if (!targetUrl) {
-        isOpening = false;
-        return;
-      }
-
-      focusZone = "player";
-      playerOverlay.style.display = "block";
-      playerOverlay.classList.add("active");
+      playerOverlay.classList.add("open");
       playerOverlay.setAttribute("aria-hidden", "false");
-      playerFrame.src = targetUrl;
-      updateFocusVisuals();
+      isPlayerOpen = true;
+      showHudTemporary();
 
-      setTimeout(() => {
-        isOpening = false;
-      }, 400);
+      await enterFullscreen(playerOverlay);
     }
 
-    function closePlayer() {
-      playerOverlay.classList.remove("active");
-      playerOverlay.style.display = "none";
+    async function closeMediaPlayer() {
+      if (!isPlayerOpen) return;
+      isPlayerOpen = false;
+      clearTimeout(hudTimer);
+      playerOverlay.classList.remove("open");
       playerOverlay.setAttribute("aria-hidden", "true");
-      playerFrame.src = "about:blank";
-      focusZone = "grid";
-      renderPage(lastPlayedSlot);
+      playerFrameWrap.innerHTML = "";
+
+      if (currentMode === "movies") {
+        await enterFullscreen(document.documentElement);
+      } else {
+        await exitFullscreen();
+      }
+      applyFocusVisual();
     }
 
-    tabTv.addEventListener("click", () => switchTab("tv"));
-    tabMovies.addEventListener("click", () => switchTab("movies"));
-    numBtns.forEach((btn, idx) => {
-      btn.addEventListener("click", () => selectNumberTab(idx));
+    function makeFallbackPoster(title, isChannel = false) {
+      const safe = title.replace(/[<>&"]/g, "");
+      const c1 = isChannel ? "#134e4a" : "#1e2942";
+      const c2 = isChannel ? "#091d1c" : "#0f131d";
+      const stroke = isChannel ? "#2dd4bf" : "#3b4d75";
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="300" height="450" viewBox="0 0 300 450">
+        <defs>
+          <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="${c1}"/>
+            <stop offset="100%" stop-color="${c2}"/>
+          </linearGradient>
+        </defs>
+        <rect width="300" height="450" fill="url(#g)"/>
+        <rect x="16" y="16" width="268" height="418" rx="12" fill="none" stroke="${stroke}" stroke-width="2"/>
+        <text x="150" y="210" fill="#eef2ff" font-family="Arial,sans-serif" font-size="20" font-weight="bold" text-anchor="middle">${safe.slice(0, 24)}</text>
+        <text x="150" y="242" fill="#9fb0d6" font-family="Arial,sans-serif" font-size="14" text-anchor="middle">${isChannel ? "CANAL AO VIVO" : "CAPA DO FILME"}</text>
+      </svg>`;
+      return "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(svg);
+    }
+
+    function cleanTitleForSearch(raw) {
+      const yearMatch = raw.match(/\b(19\d{2}|20\d{2})\b/);
+      const year = yearMatch ? yearMatch[1] : "";
+      let name = raw
+        .replace(/\[[^\]]*\]|\([^)]*\)/g, " ")
+        .replace(/\b(19\d{2}|20\d{2})\b/g, " ")
+        .replace(/\b(O Filme|A Ameaça de Electro|O Exército Dourado|O Soldado do Inferno|A Justiça é Cinza|quebrando tudo)\b/gi, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+      return { name, year };
+    }
+
+    async function fetchPoster(movie) {
+      if (posterCache[movie.title]) return posterCache[movie.title];
+      const { name, year } = cleanTitleForSearch(movie.title);
+      const params = new URLSearchParams({
+        api_key: TMDB_KEY,
+        query: name,
+        language: "pt-BR"
+      });
+      if (year) params.set("year", year);
+
+      try {
+        const res = await fetch(`https://api.themoviedb.org/3/search/movie?${params}`);
+        if (!res.ok) throw new Error("tmdb_err");
+        const data = await res.json();
+        const hit = (data.results || []).find(m => m.poster_path) || (data.results || [])[0];
+        if (hit && hit.poster_path) {
+          const url = `https://image.tmdb.org/t/p/w342${hit.poster_path}`;
+          posterCache[movie.title] = url;
+          localStorage.setItem("tmdb_posters_v1", JSON.stringify(posterCache));
+          return url;
+        }
+      } catch (_) {}
+      return makeFallbackPoster(movie.title, false);
+    }
+
+    function getSourceList() {
+      return currentMode === "channels" ? CHANNELS : MOVIES;
+    }
+
+    function getFilteredItems() {
+      const term = qInput.value.trim().toLocaleLowerCase("pt-BR");
+      return getSourceList()
+        .map((item, idx) => ({ ...item, number: idx + 1 }))
+        .filter(item => !term || item.title.toLocaleLowerCase("pt-BR").includes(term));
+    }
+
+    function getColsCount() {
+      if (window.innerWidth <= 640) return 2;
+      if (window.innerWidth <= 1024) return 3;
+      return 5;
+    }
+
+    async function switchMode(nextMode, targetCardIdx = 0, targetZone = "grid") {
+      if (nextMode === currentMode) {
+        if (nextMode === "movies") await enterFullscreen(document.documentElement);
+        return;
+      }
+      currentMode = nextMode;
+      activeTab = 0;
+      focusedTabIdx = 0;
+      focusedCardIdx = targetCardIdx;
+      focusedModeIdx = nextMode === "channels" ? 0 : 1;
+      focusZone = targetZone;
+      document.body.classList.toggle("mode-channels", currentMode === "channels");
+      render();
+
+      if (nextMode === "movies") {
+        await enterFullscreen(document.documentElement);
+      } else if (!isPlayerOpen) {
+        await exitFullscreen();
+      }
+    }
+
+    function applyFocusVisual() {
+      const modeBtns = [btnChannels, btnMovies];
+      const tabBtns = [...tabsEl.querySelectorAll(".tab")];
+      const cards = [...listEl.querySelectorAll(".card")];
+
+      searchBoxEl.classList.toggle("focused", focusZone === "search");
+      modeBtns.forEach((btn, i) => {
+        btn.classList.toggle("focused", focusZone === "mode" && i === focusedModeIdx);
+      });
+      tabBtns.forEach((btn, i) => {
+        btn.classList.toggle("focused", focusZone === "tabs" && i === focusedTabIdx);
+      });
+      cards.forEach((card, i) => {
+        card.classList.toggle("focused", focusZone === "grid" && i === focusedCardIdx);
+      });
+
+      const target =
+        focusZone === "search" ? searchBoxEl :
+        focusZone === "mode" ? modeBtns[focusedModeIdx] :
+        focusZone === "tabs" ? tabBtns[focusedTabIdx] :
+        cards[focusedCardIdx];
+
+      if (target) {
+        target.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "nearest" });
+      }
+    }
+
+    function render() {
+      const isChannels = currentMode === "channels";
+      btnChannels.classList.toggle("active", isChannels);
+      btnMovies.classList.toggle("active", !isChannels);
+
+      const filtered = getFilteredItems();
+      const totalTabs = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+      if (activeTab >= totalTabs) activeTab = 0;
+
+      tabsEl.innerHTML = "";
+      for (let t = 0; t < totalTabs; t++) {
+        const start = t * PAGE_SIZE + 1;
+        const end = Math.min((t + 1) * PAGE_SIZE, filtered.length);
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "tab" + (t === activeTab ? " active" : "");
+        btn.textContent = filtered.length ? `${start}–${end}` : "1–10";
+        btn.addEventListener("click", () => {
+          activeTab = t;
+          focusedTabIdx = t;
+          focusedCardIdx = 0;
+          focusZone = "grid";
+          render();
+        });
+        btn.addEventListener("mouseenter", () => {
+          focusZone = "tabs";
+          focusedTabIdx = t;
+          applyFocusVisual();
+        });
+        tabsEl.appendChild(btn);
+      }
+
+      const slice = filtered.slice(activeTab * PAGE_SIZE, (activeTab + 1) * PAGE_SIZE);
+      if (focusedCardIdx >= slice.length) focusedCardIdx = Math.max(0, slice.length - 1);
+
+      const labelSingular = isChannels ? "canal" : "filme";
+      countEl.textContent = `${filtered.length} ${labelSingular}(s) • Aba ${activeTab + 1} de ${totalTabs} (${slice.length} exibidos)`;
+
+      listEl.innerHTML = "";
+      slice.forEach((item, i) => {
+        const card = document.createElement("a");
+        card.className = "card";
+        card.href = "#";
+
+        const fallback = makeFallbackPoster(item.title, isChannels);
+        const customCover = (item.cover || "").trim();
+        const initialImg = customCover || (isChannels ? fallback : (posterCache[item.title] || fallback));
+
+        card.innerHTML = `
+          <div class="poster-box">
+            <img src="${initialImg}" alt="${item.title.replace(/"/g, "&quot;")}" loading="lazy">
+            <span class="idx-badge">#${item.number}</span>
+          </div>
+          <div class="card-body">
+            <span class="name">${item.title}</span>
+            <span class="watch">${isChannels ? "Assistir canal" : "Assistir"}</span>
+          </div>
+        `;
+
+        card.addEventListener("click", e => {
+          e.preventDefault();
+          focusZone = "grid";
+          focusedCardIdx = i;
+          applyFocusVisual();
+          openMediaPlayer(item);
+        });
+
+        const img = card.querySelector("img");
+        img.addEventListener("error", () => {
+          img.src = fallback;
+        });
+        if (!customCover && !isChannels && !posterCache[item.title]) {
+          fetchPoster(item).then(src => {
+            if (img.isConnected) img.src = src;
+          });
+        }
+
+        card.addEventListener("mouseenter", () => {
+          focusZone = "grid";
+          focusedCardIdx = i;
+          applyFocusVisual();
+        });
+
+        listEl.appendChild(card);
+      });
+
+      applyFocusVisual();
+    }
+
+    function setTab(nextTab) {
+      const filtered = getFilteredItems();
+      const totalTabs = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+      activeTab = (nextTab + totalTabs) % totalTabs;
+      focusedTabIdx = activeTab;
+      focusedCardIdx = 0;
+      render();
+    }
+
+    btnChannels.addEventListener("click", () => switchMode("channels", 0, "grid"));
+    btnMovies.addEventListener("click", () => switchMode("movies", 0, "grid"));
+
+    btnClosePlayer.addEventListener("click", () => closeMediaPlayer());
+    btnToggleFs.addEventListener("click", async () => {
+      if (document.fullscreenElement) {
+        await exitFullscreen();
+      } else {
+        await enterFullscreen(playerOverlay);
+      }
+    });
+    playerOverlay.addEventListener("mousemove", showHudTemporary);
+
+    qInput.addEventListener("focus", () => {
+      focusZone = "search";
+      applyFocusVisual();
     });
 
-    backBtn.addEventListener("click", (ev) => {
-      ev.preventDefault();
-      ev.stopPropagation();
-      closePlayer();
-    });
-
-    window.addEventListener("keydown", (e) => {
-      const code = e.keyCode;
-      const key = e.key;
-
-      if (focusZone === "player") {
-        if (key === "Escape" || key === "Backspace" || code === 461 || code === 10009 || code === 8) {
+    document.addEventListener("keydown", e => {
+      if (isPlayerOpen) {
+        showHudTemporary();
+        if (e.key === "Escape" || e.key === "Backspace") {
           e.preventDefault();
-          e.stopPropagation();
-          closePlayer();
-        } else if (key === "Enter" || code === 13) {
+          closeMediaPlayer();
+        } else if (e.key.toLowerCase() === "f") {
           e.preventDefault();
-          e.stopPropagation();
-          closePlayer();
+          if (document.fullscreenElement) exitFullscreen();
+          else enterFullscreen(playerOverlay);
         }
         return;
       }
 
-      const isUp = key === "ArrowUp" || code === 38;
-      const isDown = key === "ArrowDown" || code === 40;
-      const isLeft = key === "ArrowLeft" || code === 37;
-      const isRight = key === "ArrowRight" || code === 39;
-      const isEnter = key === "Enter" || code === 13;
-      const isBack = key === "Escape" || key === "Backspace" || code === 461 || code === 10009;
-
-      if (!isUp && !isDown && !isLeft && !isRight && !isEnter && !isBack) {
+      if (document.activeElement === qInput) {
+        if (e.key === "ArrowDown" || e.key === "Escape") {
+          e.preventDefault();
+          qInput.blur();
+          focusZone = "mode";
+          focusedModeIdx = currentMode === "channels" ? 0 : 1;
+          applyFocusVisual();
+        }
         return;
       }
 
-      e.preventDefault();
+      const tabBtns = [...tabsEl.querySelectorAll(".tab")];
+      const cards = [...listEl.querySelectorAll(".card")];
+      const cols = getColsCount();
 
-      if (isBack && currentPage > 0) {
-        currentPage -= 1;
-        renderPage(focusedSlot);
+      if (focusZone === "search") {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          qInput.focus();
+        } else if (e.key === "ArrowDown") {
+          e.preventDefault();
+          focusZone = "mode";
+          focusedModeIdx = currentMode === "channels" ? 0 : 1;
+          applyFocusVisual();
+        } else if (e.key === "ArrowLeft") {
+          e.preventDefault();
+          focusZone = "mode";
+          focusedModeIdx = 1;
+          applyFocusVisual();
+        }
+        return;
+      }
+
+      if (focusZone === "mode") {
+        if (e.key === "ArrowRight") {
+          e.preventDefault();
+          if (focusedModeIdx === 0) {
+            focusedModeIdx = 1;
+            applyFocusVisual();
+          } else {
+            focusZone = "search";
+            applyFocusVisual();
+          }
+        } else if (e.key === "ArrowLeft") {
+          e.preventDefault();
+          if (focusedModeIdx === 1) {
+            focusedModeIdx = 0;
+            applyFocusVisual();
+          } else {
+            switchMode(currentMode === "movies" ? "channels" : "movies", 0, "mode");
+          }
+        } else if (e.key === "ArrowUp") {
+          e.preventDefault();
+          focusZone = "search";
+          applyFocusVisual();
+        } else if (e.key === "ArrowDown") {
+          e.preventDefault();
+          focusZone = "tabs";
+          focusedTabIdx = activeTab;
+          applyFocusVisual();
+        } else if (e.key === "Enter") {
+          e.preventDefault();
+          switchMode(focusedModeIdx === 0 ? "channels" : "movies", 0, "grid");
+        }
         return;
       }
 
       if (focusZone === "tabs") {
-        const topEls = getTopElements();
-        if (isLeft) {
-          focusedTopIndex = Math.max(0, focusedTopIndex - 1);
-          updateFocusVisuals();
-        } else if (isRight) {
-          focusedTopIndex = Math.min(topEls.length - 1, focusedTopIndex + 1);
-          updateFocusVisuals();
-        } else if (isDown) {
-          focusZone = "grid";
-          renderPage(0);
-        } else if (isEnter) {
-          if (focusedTopIndex === 0) {
-            switchTab("tv");
-          } else if (focusedTopIndex === 1) {
-            switchTab("movies");
+        if (e.key === "ArrowRight") {
+          e.preventDefault();
+          focusedTabIdx = Math.min(tabBtns.length - 1, focusedTabIdx + 1);
+          applyFocusVisual();
+        } else if (e.key === "ArrowLeft") {
+          e.preventDefault();
+          if (focusedTabIdx > 0) {
+            focusedTabIdx--;
+            applyFocusVisual();
           } else {
-            selectNumberTab(focusedTopIndex - 2);
+            switchMode(currentMode === "movies" ? "channels" : "movies", 0, "tabs");
           }
+        } else if (e.key === "ArrowDown") {
+          e.preventDefault();
+          activeTab = focusedTabIdx;
+          focusZone = "grid";
+          focusedCardIdx = 0;
+          render();
+        } else if (e.key === "ArrowUp") {
+          e.preventDefault();
+          focusZone = "mode";
+          focusedModeIdx = currentMode === "channels" ? 0 : 1;
+          applyFocusVisual();
+        } else if (e.key === "Enter") {
+          e.preventDefault();
+          activeTab = focusedTabIdx;
+          focusZone = "grid";
+          focusedCardIdx = 0;
+          render();
         }
         return;
       }
 
-      const col = focusedSlot % 3;
-      const row = Math.floor(focusedSlot / 3);
-      const maxPageIndex = NUM_TABS_COUNT - 1;
+      if (!cards.length) return;
+      const currentCol = focusedCardIdx % cols;
 
-      if (isLeft) {
-        if (col > 0) {
-          focusedSlot -= 1;
-          updateFocusVisuals();
-        } else if (currentPage > 0) {
-          currentPage -= 1;
-          renderPage(row * 3 + 2);
+      if (e.key === "ArrowLeft") {
+        e.preventDefault();
+        if (currentCol === 0) {
+          switchMode(currentMode === "movies" ? "channels" : "movies", 0, "grid");
+        } else {
+          focusedCardIdx--;
+          applyFocusVisual();
         }
-      } else if (isRight) {
-        if (col < 2) {
-          focusedSlot += 1;
-          updateFocusVisuals();
-        } else if (currentPage < maxPageIndex) {
-          currentPage += 1;
-          renderPage(row * 3);
+      } else if (e.key === "ArrowRight") {
+        e.preventDefault();
+        if (focusedCardIdx + 1 < cards.length) {
+          focusedCardIdx++;
+          applyFocusVisual();
+        } else {
+          setTab(activeTab + 1);
         }
-      } else if (isUp) {
-        if (row > 0) {
-          focusedSlot -= 3;
-          updateFocusVisuals();
-        } else if (currentPage > 0) {
-          currentPage -= 1;
-          renderPage(6 + col);
+      } else if (e.key === "ArrowDown") {
+        e.preventDefault();
+        if (focusedCardIdx + cols < cards.length) {
+          focusedCardIdx += cols;
+          applyFocusVisual();
+        } else {
+          setTab(activeTab + 1);
+        }
+      } else if (e.key === "ArrowUp") {
+        e.preventDefault();
+        if (focusedCardIdx - cols >= 0) {
+          focusedCardIdx -= cols;
+          applyFocusVisual();
         } else {
           focusZone = "tabs";
-          focusedTopIndex = 2 + currentPage;
-          updateFocusVisuals();
+          focusedTabIdx = activeTab;
+          applyFocusVisual();
         }
-      } else if (isDown) {
-        if (row < 2) {
-          focusedSlot += 3;
-          updateFocusVisuals();
-        } else {
-          if (currentPage < maxPageIndex) {
-            currentPage += 1;
-            renderPage(col);
-          } else {
-            currentPage = 0;
-            renderPage(col);
-          }
-        }
-      } else if (isEnter) {
-        const now = Date.now();
-        if (isOpening || now - lastPressTime < 400) return;
-        lastPressTime = now;
-        const slice = getPageSlice(currentPage);
-        const item = slice[focusedSlot];
-        if (item && item.url) {
-          lastPlayedSlot = focusedSlot;
-          openPlayer(item.url);
+      } else if (e.key === "Enter") {
+        e.preventDefault();
+        const filtered = getFilteredItems();
+        const slice = filtered.slice(activeTab * PAGE_SIZE, (activeTab + 1) * PAGE_SIZE);
+        const item = slice[focusedCardIdx];
+        if (item) {
+          openMediaPlayer(item);
         }
       }
     });
 
-    let wheelLock = false;
-    window.addEventListener("wheel", (e) => {
-      if (focusZone === "player" || wheelLock) return;
-      if (Math.abs(e.deltaY) < 20) return;
+    qInput.addEventListener("input", () => {
+      activeTab = 0;
+      focusedCardIdx = 0;
+      render();
+    });
 
-      wheelLock = true;
-      const maxPageIndex = NUM_TABS_COUNT - 1;
-
-      if (e.deltaY > 0) {
-        currentPage = currentPage < maxPageIndex ? currentPage + 1 : 0;
-      } else {
-        currentPage = currentPage > 0 ? currentPage - 1 : maxPageIndex;
-      }
-
-      focusZone = "grid";
-      renderPage(focusedSlot);
-
-      setTimeout(() => {
-        wheelLock = false;
-      }, 220);
-    }, { passive: true });
-
-    renderPage(0);
+    window.addEventListener("resize", applyFocusVisual);
+    render();
   </script>
 </body>
 </html>
