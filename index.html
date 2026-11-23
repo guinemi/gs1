@@ -18,6 +18,7 @@
       margin: 0;
       padding: 0;
       box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
     }
 
     html, body {
@@ -51,49 +52,70 @@
       letter-spacing: 2px;
       color: var(--accent);
       text-transform: uppercase;
+      flex-shrink: 0;
+    }
+
+    .nav-group {
+      display: flex;
+      align-items: center;
+      gap: 24px;
     }
 
     .tabs {
       display: flex;
       align-items: center;
-      gap: 14px;
+      gap: 12px;
     }
 
-    .tab-btn {
+    .num-tabs {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .tab-btn,
+    .num-btn {
       background: #242424;
       color: var(--text-muted);
       border: 3px solid transparent;
       border-radius: 6px;
-      padding: 10px 24px;
-      font-size: 18px;
-      font-weight: 700;
       cursor: pointer;
       outline: none;
+      touch-action: manipulation;
+      font-weight: 700;
       transition: transform 0.14s ease, background-color 0.14s ease, color 0.14s ease, border-color 0.14s ease;
     }
 
-    .tab-btn.active {
+    .tab-btn {
+      padding: 10px 22px;
+      font-size: 18px;
+    }
+
+    .num-btn {
+      width: 44px;
+      height: 44px;
+      font-size: 17px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .tab-btn.active,
+    .num-btn.active {
       background: #2f2f2f;
       color: var(--text-main);
       border-bottom: 4px solid var(--accent);
     }
 
     .tab-btn:focus,
-    .tab-btn.tv-focused {
+    .tab-btn.tv-focused,
+    .num-btn:focus,
+    .num-btn.tv-focused {
       background: #ffffff;
       color: #000000;
       border-color: var(--accent);
-      transform: scale(1.05);
+      transform: scale(1.06);
       box-shadow: 0 0 22px rgba(255, 255, 255, 0.45);
-    }
-
-    .page-indicator {
-      font-size: 15px;
-      font-weight: 700;
-      color: var(--text-muted);
-      background: rgba(255, 255, 255, 0.07);
-      padding: 7px 14px;
-      border-radius: 999px;
     }
 
     main {
@@ -130,6 +152,8 @@
       outline: none;
       display: flex;
       align-items: flex-end;
+      text-align: left;
+      touch-action: manipulation;
       transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
     }
 
@@ -139,6 +163,7 @@
       width: 100%;
       height: 100%;
       object-fit: cover;
+      pointer-events: none;
       transition: transform 0.22s ease;
     }
 
@@ -153,6 +178,7 @@
         rgba(0, 0, 0, 0.94) 100%
       );
       z-index: 1;
+      pointer-events: none;
     }
 
     .card-info {
@@ -164,6 +190,7 @@
       align-items: center;
       justify-content: space-between;
       gap: 10px;
+      pointer-events: none;
     }
 
     .card-title {
@@ -193,6 +220,7 @@
       border: 2px dashed rgba(255, 255, 255, 0.12);
       align-items: center;
       justify-content: center;
+      cursor: default;
     }
 
     .card.empty-slot::after {
@@ -221,11 +249,12 @@
     .player-overlay {
       display: none;
       position: fixed;
-      inset: 0;
+      top: 0;
+      left: 0;
       width: 100vw;
       height: 100vh;
       background-color: #000000;
-      z-index: 100;
+      z-index: 9999;
     }
 
     .player-overlay.active {
@@ -240,23 +269,24 @@
       height: 100vh;
       border: none;
       background: #000000;
-      z-index: 101;
+      z-index: 10000;
     }
 
     .back-btn {
       position: fixed;
       top: 18px;
       left: 20px;
-      z-index: 110;
-      background: rgba(20, 20, 20, 0.85);
+      z-index: 10001;
+      background: rgba(20, 20, 20, 0.92);
       color: #ffffff;
-      border: 2px solid rgba(255, 255, 255, 0.55);
+      border: 2px solid rgba(255, 255, 255, 0.75);
       border-radius: 8px;
       padding: 10px 18px;
       font-size: 16px;
       font-weight: 700;
       cursor: pointer;
       outline: none;
+      touch-action: manipulation;
       transition: background-color 0.15s ease, transform 0.15s ease, border-color 0.15s ease;
     }
 
@@ -274,12 +304,20 @@
   <header>
     <div class="brand">GUINEMI GS</div>
 
-    <nav class="tabs" aria-label="Categorias">
-      <button id="tabTv" class="tab-btn active" data-tab="tv" tabindex="0">Canais de TV</button>
-      <button id="tabMovies" class="tab-btn" data-tab="movies" tabindex="0">Filmes</button>
-    </nav>
+    <div class="nav-group">
+      <nav class="tabs" aria-label="Categorias">
+        <button type="button" id="tabTv" class="tab-btn active" data-tab="tv" tabindex="0">Canais de TV</button>
+        <button type="button" id="tabMovies" class="tab-btn" data-tab="movies" tabindex="0">Filmes</button>
+      </nav>
 
-    <div id="pageIndicator" class="page-indicator">Página 1 de 2</div>
+      <div id="numTabs" class="num-tabs" aria-label="Abas numéricas">
+        <button type="button" class="num-btn active" data-page="0" tabindex="0">1</button>
+        <button type="button" class="num-btn" data-page="1" tabindex="0">2</button>
+        <button type="button" class="num-btn" data-page="2" tabindex="0">3</button>
+        <button type="button" class="num-btn" data-page="3" tabindex="0">4</button>
+        <button type="button" class="num-btn" data-page="4" tabindex="0">5</button>
+      </div>
+    </div>
   </header>
 
   <main>
@@ -287,12 +325,13 @@
   </main>
 
   <div id="playerOverlay" class="player-overlay" aria-hidden="true">
-    <button id="backBtn" class="back-btn" tabindex="-1">◄ Voltar</button>
+    <button type="button" id="backBtn" class="back-btn" tabindex="0">◄ Voltar</button>
     <iframe
       id="playerFrame"
       src=""
-      tabindex="0"
-      allow="autoplay; encrypted-media; fullscreen"
+      tabindex="-1"
+      referrerpolicy="strict-origin-when-cross-origin"
+      allow="autoplay; encrypted-media; fullscreen; picture-in-picture; web-share"
       allowfullscreen
     ></iframe>
   </div>
@@ -403,19 +442,19 @@
           url: "https://www.youtube.com/embed/SBoODpO-DT0?si=DXyW8ffCFSaOyb7n"
         },
         {
-          title: "Filme 03",
-          cover: "https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?auto=format&fit=crop&w=800&q=80",
-          url: "https://sinalpublicoetv.vercel.app/?id=cartoonnetwork"
+          title: "O QUE SERA DE NOZES",
+          cover: "https://br.web.img3.acsta.net/r_1920_1080/pictures/14/05/23/11/23/187018.jpg",
+          url: "https://youtu.be/dru4r1zx0zo?si=VmOGzwk5i_vxcgvI"
         },
         {
-          title: "Filme 04",
-          cover: "https://images.unsplash.com/photo-1478720568477-152d9b164e26?auto=format&fit=crop&w=800&q=80",
-          url: "https://sinalpublicoetv.vercel.app/?id=cartoonnetwork"
+          title: "COLOMBIANA 2",
+          cover: "https://www.querofilme.com.br/images/posters/tw/1906-colombiana-2-1.webp",
+          url: "https://youtu.be/P8lkmMGDnYg?si=gZogq1cooJ2TCvge"
         },
         {
-          title: "Filme 05",
-          cover: "https://images.unsplash.com/photo-1542204165-65bf26472b9b?auto=format&fit=crop&w=800&q=80",
-          url: "https://sinalpublicoetv.vercel.app/?id=cartoonnetwork"
+          title: "ESQUECERAM DE MIM",
+          cover: "https://www.famdvd.com.br/media/tmp/webp/catalog/product/cache/1/image/600x/9df78eab33525d08d6e5fb8d27136e95/b/d/bd_esqueceram_de_mim_luva_1_1_png.webp",
+          url: "https://youtu.be/Tf1GIhvxywc?si=Rg6B4Q4vyZhtiUJX"
         },
         {
           title: "Filme 06",
@@ -486,11 +525,12 @@
     };
 
     const PAGE_SIZE = 9;
+    const NUM_TABS_COUNT = 5;
 
     const tabTv = document.getElementById("tabTv");
     const tabMovies = document.getElementById("tabMovies");
+    const numBtns = Array.from(document.querySelectorAll(".num-btn"));
     const grid9 = document.getElementById("grid9");
-    const pageIndicator = document.getElementById("pageIndicator");
     const playerOverlay = document.getElementById("playerOverlay");
     const playerFrame = document.getElementById("playerFrame");
     const backBtn = document.getElementById("backBtn");
@@ -498,41 +538,44 @@
     let currentTab = "tv";
     let currentPage = 0;
     let focusZone = "grid";
-    let focusedTabIndex = 0;
+    let focusedTopIndex = 0;
     let focusedSlot = 0;
     let lastPlayedSlot = 0;
+    let lastPressTime = 0;
+    let isOpening = false;
 
-    function isInFullscreen() {
-      return Boolean(
-        document.fullscreenElement ||
-        document.webkitFullscreenElement ||
-        document.mozFullScreenElement ||
-        document.msFullscreenElement
-      );
-    }
+    function extractYouTubeWatchUrl(rawUrl) {
+      if (!rawUrl) return "";
+      const trimmed = rawUrl.trim();
+      const match = trimmed.match(/src=["']([^"']+)["']/i);
+      const extracted = match ? match[1] : trimmed;
 
-    function ensureFullscreen() {
-      if (isInFullscreen()) return;
-      const root = document.documentElement;
-      const req =
-        root.requestFullscreen ||
-        root.webkitRequestFullscreen ||
-        root.mozRequestFullScreen ||
-        root.msRequestFullscreen;
-
-      if (typeof req === "function") {
-        try {
-          const res = req.call(root);
-          if (res && typeof res.catch === "function") {
-            res.catch(() => {});
+      try {
+        const parsed = new URL(extracted);
+        if (parsed.hostname.includes("youtube.com")) {
+          const parts = parsed.pathname.split("/").filter(Boolean);
+          const embedIdx = parts.indexOf("embed");
+          if (embedIdx !== -1 && parts[embedIdx + 1]) {
+            return `https://www.youtube.com/watch?v=${parts[embedIdx + 1]}`;
           }
-        } catch (_) {}
-      }
+          const shortsIdx = parts.indexOf("shorts");
+          if (shortsIdx !== -1 && parts[shortsIdx + 1]) {
+            return `https://www.youtube.com/watch?v=${parts[shortsIdx + 1]}`;
+          }
+          const vParam = parsed.searchParams.get("v");
+          if (vParam) {
+            return `https://www.youtube.com/watch?v=${vParam}`;
+          }
+        }
+        if (parsed.hostname === "youtu.be") {
+          const vid = parsed.pathname.replace(/^\/+/, "");
+          if (vid) {
+            return `https://www.youtube.com/watch?v=${vid}`;
+          }
+        }
+      } catch (_) {}
+      return "";
     }
-
-    ["pointerdown", "pointermove", "keydown", "touchstart"].forEach((evtName) => {
-      window.addEventListener(evtName, ensureFullscreen, { passive: true });
-    });
 
     function normalizePlayerUrl(rawUrl) {
       if (!rawUrl) return "";
@@ -557,61 +600,87 @@
       return CATALOG[currentTab] || [];
     }
 
-    function getTotalPages() {
-      const len = getItems().length;
-      return Math.max(1, Math.ceil(len / PAGE_SIZE));
-    }
-
     function getPageSlice(pageIndex) {
       const items = getItems();
       const start = pageIndex * PAGE_SIZE;
       return items.slice(start, start + PAGE_SIZE);
     }
 
+    function getTopElements() {
+      return [tabTv, tabMovies, ...numBtns];
+    }
+
     function updateTabsUI() {
       tabTv.classList.toggle("active", currentTab === "tv");
       tabMovies.classList.toggle("active", currentTab === "movies");
+      numBtns.forEach((btn, idx) => {
+        btn.classList.toggle("active", idx === currentPage);
+      });
+    }
+
+    function findNearestFilledSlot(cards, desiredSlot) {
+      if (cards[desiredSlot] && !cards[desiredSlot].classList.contains("empty-slot")) {
+        return desiredSlot;
+      }
+      for (let i = desiredSlot; i >= 0; i--) {
+        if (cards[i] && !cards[i].classList.contains("empty-slot")) {
+          return i;
+        }
+      }
+      for (let i = desiredSlot + 1; i < cards.length; i++) {
+        if (cards[i] && !cards[i].classList.contains("empty-slot")) {
+          return i;
+        }
+      }
+      return -1;
     }
 
     function updateFocusVisuals() {
       document.querySelectorAll(".tv-focused").forEach(el => el.classList.remove("tv-focused"));
 
       if (focusZone === "tabs") {
-        const btn = focusedTabIndex === 0 ? tabTv : tabMovies;
-        btn.classList.add("tv-focused");
-        btn.focus({ preventScroll: true });
+        const topEls = getTopElements();
+        focusedTopIndex = Math.max(0, Math.min(focusedTopIndex, topEls.length - 1));
+        const btn = topEls[focusedTopIndex];
+        if (btn) {
+          btn.classList.add("tv-focused");
+          btn.focus({ preventScroll: true });
+        }
       } else if (focusZone === "grid") {
-        const cards = grid9.querySelectorAll(".card");
+        const cards = Array.from(grid9.children);
         if (cards.length > 0) {
-          const safeIndex = Math.min(focusedSlot, cards.length - 1);
-          focusedSlot = safeIndex;
-          const target = cards[safeIndex];
-          target.classList.add("tv-focused");
-          target.focus({ preventScroll: true });
+          const clamped = Math.max(0, Math.min(focusedSlot, cards.length - 1));
+          const resolvedIndex = findNearestFilledSlot(cards, clamped);
+          if (resolvedIndex !== -1) {
+            focusedSlot = resolvedIndex;
+            const target = cards[resolvedIndex];
+            target.classList.add("tv-focused");
+            target.focus({ preventScroll: true });
+          }
         }
       } else if (focusZone === "player") {
-        backBtn.classList.remove("tv-focused");
-        playerFrame.focus({ preventScroll: true });
+        backBtn.classList.add("tv-focused");
+        backBtn.focus({ preventScroll: true });
       }
     }
 
     function renderPage(preferredSlot = 0) {
-      const totalPages = getTotalPages();
-      if (currentPage >= totalPages) currentPage = totalPages - 1;
+      const maxPageIndex = NUM_TABS_COUNT - 1;
+      if (currentPage > maxPageIndex) currentPage = maxPageIndex;
       if (currentPage < 0) currentPage = 0;
 
       updateTabsUI();
-      pageIndicator.textContent = `Página ${currentPage + 1} de ${totalPages}`;
 
       const slice = getPageSlice(currentPage);
       grid9.innerHTML = "";
 
       for (let slot = 0; slot < PAGE_SIZE; slot++) {
         const item = slice[slot];
-        const card = document.createElement("div");
+        const card = document.createElement(item ? "button" : "div");
         card.dataset.slot = slot;
 
         if (item) {
+          card.type = "button";
           card.className = "card";
           card.tabIndex = 0;
           card.setAttribute("role", "button");
@@ -641,16 +710,15 @@
           card.appendChild(img);
           card.appendChild(info);
 
-          card.addEventListener("click", () => {
+          card.addEventListener("click", (ev) => {
+            ev.preventDefault();
+            ev.stopPropagation();
+            const now = Date.now();
+            if (isOpening || now - lastPressTime < 400) return;
+            lastPressTime = now;
             focusedSlot = slot;
             lastPlayedSlot = slot;
             openPlayer(item.url);
-          });
-
-          card.addEventListener("mouseenter", () => {
-            focusZone = "grid";
-            focusedSlot = slot;
-            updateFocusVisuals();
           });
         } else {
           card.className = "card empty-slot";
@@ -663,7 +731,7 @@
         grid9.appendChild(card);
       }
 
-      focusedSlot = Math.min(preferredSlot, PAGE_SIZE - 1);
+      focusedSlot = Math.max(0, Math.min(preferredSlot, PAGE_SIZE - 1));
       if (focusZone === "grid") {
         updateFocusVisuals();
       }
@@ -671,35 +739,68 @@
 
     function switchTab(tabName) {
       currentTab = tabName;
-      focusedTabIndex = tabName === "tv" ? 0 : 1;
+      focusedTopIndex = tabName === "tv" ? 0 : 1;
       currentPage = 0;
       focusZone = "grid";
       renderPage(0);
     }
 
+    function selectNumberTab(pageIdx) {
+      currentPage = Math.max(0, Math.min(pageIdx, NUM_TABS_COUNT - 1));
+      focusedTopIndex = 2 + currentPage;
+      focusZone = "grid";
+      renderPage(0);
+    }
+
     function openPlayer(url) {
-      const cleanUrl = normalizePlayerUrl(url);
-      if (!cleanUrl) return;
-      ensureFullscreen();
-      playerFrame.src = cleanUrl;
+      if (isOpening) return;
+      isOpening = true;
+
+      const ytWatchUrl = extractYouTubeWatchUrl(url);
+      if (ytWatchUrl) {
+        window.location.href = ytWatchUrl;
+        setTimeout(() => { isOpening = false; }, 1000);
+        return;
+      }
+
+      const targetUrl = normalizePlayerUrl(url);
+      if (!targetUrl) {
+        isOpening = false;
+        return;
+      }
+
+      focusZone = "player";
+      playerOverlay.style.display = "block";
       playerOverlay.classList.add("active");
       playerOverlay.setAttribute("aria-hidden", "false");
-      focusZone = "player";
+      playerFrame.src = targetUrl;
       updateFocusVisuals();
+
+      setTimeout(() => {
+        isOpening = false;
+      }, 400);
     }
 
     function closePlayer() {
       playerOverlay.classList.remove("active");
+      playerOverlay.style.display = "none";
       playerOverlay.setAttribute("aria-hidden", "true");
-      playerFrame.src = "";
+      playerFrame.src = "about:blank";
       focusZone = "grid";
       renderPage(lastPlayedSlot);
-      ensureFullscreen();
     }
 
     tabTv.addEventListener("click", () => switchTab("tv"));
     tabMovies.addEventListener("click", () => switchTab("movies"));
-    backBtn.addEventListener("click", closePlayer);
+    numBtns.forEach((btn, idx) => {
+      btn.addEventListener("click", () => selectNumberTab(idx));
+    });
+
+    backBtn.addEventListener("click", (ev) => {
+      ev.preventDefault();
+      ev.stopPropagation();
+      closePlayer();
+    });
 
     window.addEventListener("keydown", (e) => {
       const code = e.keyCode;
@@ -708,6 +809,11 @@
       if (focusZone === "player") {
         if (key === "Escape" || key === "Backspace" || code === 461 || code === 10009 || code === 8) {
           e.preventDefault();
+          e.stopPropagation();
+          closePlayer();
+        } else if (key === "Enter" || code === 13) {
+          e.preventDefault();
+          e.stopPropagation();
           closePlayer();
         }
         return;
@@ -733,24 +839,31 @@
       }
 
       if (focusZone === "tabs") {
+        const topEls = getTopElements();
         if (isLeft) {
-          focusedTabIndex = 0;
+          focusedTopIndex = Math.max(0, focusedTopIndex - 1);
           updateFocusVisuals();
         } else if (isRight) {
-          focusedTabIndex = 1;
+          focusedTopIndex = Math.min(topEls.length - 1, focusedTopIndex + 1);
           updateFocusVisuals();
         } else if (isDown) {
           focusZone = "grid";
           renderPage(0);
         } else if (isEnter) {
-          switchTab(focusedTabIndex === 0 ? "tv" : "movies");
+          if (focusedTopIndex === 0) {
+            switchTab("tv");
+          } else if (focusedTopIndex === 1) {
+            switchTab("movies");
+          } else {
+            selectNumberTab(focusedTopIndex - 2);
+          }
         }
         return;
       }
 
       const col = focusedSlot % 3;
       const row = Math.floor(focusedSlot / 3);
-      const totalPages = getTotalPages();
+      const maxPageIndex = NUM_TABS_COUNT - 1;
 
       if (isLeft) {
         if (col > 0) {
@@ -758,15 +871,15 @@
           updateFocusVisuals();
         } else if (currentPage > 0) {
           currentPage -= 1;
-          renderPage(focusedSlot + 2);
+          renderPage(row * 3 + 2);
         }
       } else if (isRight) {
         if (col < 2) {
           focusedSlot += 1;
           updateFocusVisuals();
-        } else if (currentPage < totalPages - 1) {
+        } else if (currentPage < maxPageIndex) {
           currentPage += 1;
-          renderPage(focusedSlot - 2);
+          renderPage(row * 3);
         }
       } else if (isUp) {
         if (row > 0) {
@@ -777,7 +890,7 @@
           renderPage(6 + col);
         } else {
           focusZone = "tabs";
-          focusedTabIndex = currentTab === "tv" ? 0 : 1;
+          focusedTopIndex = 2 + currentPage;
           updateFocusVisuals();
         }
       } else if (isDown) {
@@ -785,7 +898,7 @@
           focusedSlot += 3;
           updateFocusVisuals();
         } else {
-          if (currentPage < totalPages - 1) {
+          if (currentPage < maxPageIndex) {
             currentPage += 1;
             renderPage(col);
           } else {
@@ -794,6 +907,9 @@
           }
         }
       } else if (isEnter) {
+        const now = Date.now();
+        if (isOpening || now - lastPressTime < 400) return;
+        lastPressTime = now;
         const slice = getPageSlice(currentPage);
         const item = slice[focusedSlot];
         if (item && item.url) {
@@ -809,12 +925,12 @@
       if (Math.abs(e.deltaY) < 20) return;
 
       wheelLock = true;
-      const totalPages = getTotalPages();
+      const maxPageIndex = NUM_TABS_COUNT - 1;
 
       if (e.deltaY > 0) {
-        currentPage = currentPage < totalPages - 1 ? currentPage + 1 : 0;
+        currentPage = currentPage < maxPageIndex ? currentPage + 1 : 0;
       } else {
-        currentPage = currentPage > 0 ? currentPage - 1 : totalPages - 1;
+        currentPage = currentPage > 0 ? currentPage - 1 : maxPageIndex;
       }
 
       focusZone = "grid";
