@@ -201,9 +201,10 @@
       background: var(--panel);
       color: var(--text);
       border: 1px solid var(--border);
-      border-radius: 9px;
-      padding: 9px 14px;
-      font-size: 14px;
+      border-radius: 7px;
+      padding: 5px 9px;
+      min-width: 28px;
+      font-size: 11.5px;
       font-weight: 700;
       cursor: pointer;
       transition: background .15s, border-color .15s, transform .12s;
@@ -226,8 +227,8 @@
     }
     .grid {
       display: grid;
-      grid-template-columns: repeat(13, minmax(0, 1fr));
-      gap: 8px;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      gap: 10px;
     }
     .grid .card {
       border-radius: 9px;
@@ -470,21 +471,28 @@
        },
        ========================================================================= */
 
-    const CHANNEL_EMBED_URL = "https://sinalpublicoetv.vercel.app/?id=ae&autoplay=1";
-
     const CHANNELS = [
-      { title: "A&E Ao Vivo (Sinal Público)", cover: "https://br.web.img3.acsta.net/c_300_300/pictures/19/08/21/17/45/3102941.jpg", url: CHANNEL_EMBED_URL },
-      { title: "Canal 02 - Séries & Drama", cover: "", url: CHANNEL_EMBED_URL },
-      { title: "Canal 03 - Esportes Ao Vivo", cover: "", url: CHANNEL_EMBED_URL },
-      { title: "Canal 04 - Notícias 24h", cover: "", url: CHANNEL_EMBED_URL },
-      { title: "Canal 05 - Desenhos & Família", cover: "", url: CHANNEL_EMBED_URL },
-      { title: "Canal 06 - Documentários", cover: "", url: CHANNEL_EMBED_URL },
-      { title: "Canal 07 - Música & Clipes", cover: "", url: CHANNEL_EMBED_URL },
-      { title: "Canal 08 - Clássicos & Retro", cover: "", url: CHANNEL_EMBED_URL },
-      { title: "Canal 09 - Sci-Fi & Fantasia", cover: "", url: CHANNEL_EMBED_URL },
-      { title: "Canal 10 - Comédia & Variedades", cover: "", url: CHANNEL_EMBED_URL },
-      { title: "Canal 11 - Cinema Nacional", cover: "", url: CHANNEL_EMBED_URL },
-      { title: "Canal 12 - Anime & Cultura", cover: "", url: CHANNEL_EMBED_URL }
+      { title: "AE", cover: "", url: "https://a5a7158118e59ee590424b55bb9aed17.sv-nl-02-cloudfront-net.lat/stream/9df0467bf38fa84555b31b5cc5882dc2/error.m3u8" },
+      { title: "AMC", cover: "", url: "https://a5a7158118e59ee590424b55bb9aed17.sv-nl-02-cloudfront-net.lat/stream/b2aa4f1ca5c63a90eb65fa067e605f74/error.m3u8" },
+      { title: "AXN", cover: "", url: "https://a5a7158118e59ee590424b55bb9aed17.sv-nl-02-cloudfront-net.lat/stream/f028d96e7ccd228ef8010e8f68fa5bcd/error.m3u8" },
+      { title: "ADULTSWIM", cover: "", url: "https://sinalpublicoetv.vercel.app/?id=adultswim" },
+      { title: "ANIMALPLANET", cover: "", url: "https://sinalpublicoetv.vercel.app/?id=animalplanet" },
+      { title: "BANDNEWS", cover: "", url: "https://sinalpublicoetv.vercel.app/?id=bandnews" },
+      { title: "BANDSP", cover: "", url: "https://sinalpublicoetv.vercel.app/?id=bandsp" },
+      { title: "CARTOONNETWORK", cover: "", url: "https://sinalpublicoetv.vercel.app/?id=cartoonnetwork" },
+      { title: "GLOOB", cover: "", url: "https://sinalpublicoetv.vercel.app/?id=gloob" },
+      { title: "CARTOONITO", cover: "", url: "https://sinalpublicoetv.vercel.app/?id=cartoonito" },
+      { title: "CINEMAX", cover: "", url: "https://sinalpublicoetv.vercel.app/?id=cinemax" },
+      { title: "COMBATE", cover: "", url: "https://sinalpublicoetv.vercel.app/?id=combate" },
+      { title: "CULTURA", cover: "", url: "https://sinalpublicoetv.vercel.app/?id=cultura" },
+      { title: "DISCOVERYCHANNEL", cover: "", url: "https://sinalpublicoetv.vercel.app/?id=discoverychannel" },
+      { title: "DISCOVERYID", cover: "", url: "https://sinalpublicoetv.vercel.app/?id=discoveryid" },
+      { title: "DISCOVERYTURBO", cover: "", url: "https://sinalpublicoetv.vercel.app/?id=discoveryturbo" },
+      { title: "DISCOVERYWORLD", cover: "", url: "https://sinalpublicoetv.vercel.app/?id=discoveryworld" },
+      { title: "DISNEYPLUS1", cover: "", url: "https://sinalpublicoetv.vercel.app/?id=disneyplus1" },
+      { title: "GLOBOSP", cover: "", url: "https://sinalpublicoetv.vercel.app/?id=globosp" },
+      { title: "GNT", cover: "", url: "https://sinalpublicoetv.vercel.app/?id=gnt" },
+      { title: "HBO", cover: "", url: "https://sinalpublicoetv.vercel.app/?id=hbo" }
     ];
 
     const FANTASIA_MOVIES = [
@@ -588,7 +596,6 @@
       { title: "Piratas do Caribe: O Baú da Morte 2006", cover: "https://i.ytimg.com/an/3P5_midRLR0/2501925968512736437_mq.jpg?v=62e13603", url: "https://drive.google.com/file/d/1B5cBpBs_EgjZ-Z9ejVKHAC1tgPDio-BA" },
       { title: "O Hobbit: Uma Jornada Inesperada 2012", cover: "https://br.web.img3.acsta.net/c_300_300/medias/nmedia/18/93/43/35/20340755.jpg", url: "https://drive.google.com/file/d/1ZQRiWPPkP82pk3DI78k3m1MLvMdPjz3I" },
       { title: "O Hobbit: A Desolação de Smaug 2013", cover: "https://br.web.img3.acsta.net/c_300_300/pictures/210/567/21056777_20131112081605649.jpg", url: "https://drive.google.com/file/d/1UOW7h-C2qeSor0ah1EthHqzN2lgan0MH" },
-      { title: "O Hobbit: A Batalha dos Cinco Exércitos 2014", cover: "https://br.web.img3.acsta.net/c_300_300/pictures/14/11/14/17/43/568445.jpg", url: "https://drive.google.com/file/d/1eKxs4OrQgr-gl4R_" }
     ];
 
     const TERROR_MOVIES = [
@@ -696,7 +703,7 @@
       { title: "Brinquedo Assasino 2019", cover: "https://br.web.img2.acsta.net/c_300_300/img/17/89/178934f65572db84b8e9f32420c478a9.jpg", url: "https://drive.google.com/file/d/1YOnuLOwYM3LDOkMdbD1SP2bOPMO7Dwxw" },
       { title: "O Culto de Chucky 2017", cover: "https://br.web.img3.acsta.net/c_300_300/pictures/17/10/20/20/01/0738714.jpg", url: "https://drive.google.com/file/d/1arMVkT2dvSWusjSYV_-4KM_hPnjZBxMa" },
       { title: "O Filho de Chucky 2004", cover: "https://abre.ai/fDLh", url: "https://drive.google.com/file/d/1pxn9tOeTtRth_bg4FvfpAD0Wg-AgvBr5" },
-      { title: "A Noiva de Chucky (1998)", cover: "https://br.web.img3.acsta.net/c_300_300/medias/nmedia/18/87/11/45/19872155.jpg", url: "https://drive.google.com/file/d/1CYV1XG0rlMCuW1R0PgGAt8L8jA8DFdE4" }
+
     ];
 
     const BASE_MOVIES = [
@@ -806,7 +813,7 @@
 
     const MOVIES = [...FANTASIA_MOVIES, ...TERROR_MOVIES, ...BASE_MOVIES];
 
-    const PAGE_SIZE = 25;
+    const PAGE_SIZE = 14;
     const TMDB_KEY = "8265bd1679663a7ea12ac168da84d2e8";
     const posterCache = JSON.parse(localStorage.getItem("tmdb_posters_v1") || "{}");
 
@@ -897,13 +904,10 @@
     }
 
     function normalizeMediaUrl(rawUrl) {
-      if (!rawUrl) return CHANNEL_EMBED_URL;
+      if (!rawUrl) return "";
       const driveMatch = rawUrl.match(/drive\.google\.com\/file\/d\/([^/]+)/);
       if (driveMatch) {
         return `https://drive.google.com/file/d/${driveMatch[1]}/preview`;
-      }
-      if (rawUrl.includes("sinalpublicoetv.vercel.app") && !rawUrl.includes("autoplay=")) {
-        return rawUrl + (rawUrl.includes("?") ? "&autoplay=1" : "?autoplay=1");
       }
       return rawUrl;
     }
@@ -1000,8 +1004,7 @@
 
     function getColsCount() {
       if (window.innerWidth <= 640) return 4;
-      if (window.innerWidth <= 1180) return 7;
-      return 13;
+      return 7;
     }
 
     function switchMode(nextMode, targetCardIdx = 0, targetZone = "grid") {
@@ -1059,7 +1062,7 @@
         const btn = document.createElement("button");
         btn.type = "button";
         btn.className = "tab" + (t === activeTab ? " active" : "");
-        btn.textContent = filtered.length ? `${start}–${end}` : "1–25";
+        btn.textContent = `${t + 1}`;
         btn.addEventListener("click", () => {
           activeTab = t;
           focusedTabIdx = t;
@@ -1082,7 +1085,7 @@
       countEl.textContent = `${filtered.length} ${labelSingular}(s) • Aba ${activeTab + 1} de ${totalTabs} (${slice.length} exibidos)`;
 
       listEl.innerHTML = "";
-      const desktopTwoRows = window.innerWidth > 1180 && slice.length === 25;
+      const desktopTwoRows = false;
       slice.forEach((item, i) => {
         const card = document.createElement("a");
         card.className = "card";
@@ -1378,4 +1381,3 @@
   </script>
 </body>
 </html>
-```[cite: 1]
